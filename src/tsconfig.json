@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "sourceMap": true,
+        "outDir": "../lib",
+        "module": "umd",
+        "strict": true,
+        "inlineSourceMap": false,
+        "noImplicitAny": true,
+        "inlineSources": true,
+    }
+}
