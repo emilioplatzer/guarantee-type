@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
-        "outDir": "../test-bild-local",
+        "outDir": "../test-biuld-local",
         "strict": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
     }
 }
