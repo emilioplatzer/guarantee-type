@@ -89,9 +89,26 @@ function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, v
     }
 }
 
+export function throwAllErrorsInAString(errors:string[]){
+    if(errors.length) throw new Error(`guarantee excpetion. ${errors.join(', ')}`);
+}
+
+export function consoleErrorAllErrors(errors:string[]){
+    if(errors.length) console.error(`guarantee errors.`,errors);
+}
+
+export function ignoreAllErrors(errors:string[]){
+}
+
+var guaranteeOnErrorListener:(errors:string[]) => void = throwAllErrorsInAString;
+
+export function guaranteeOnError(fun:(errors:string[]) => void){
+    guaranteeOnErrorListener = fun;
+}
+
 export function guarantee<CurrentD extends Description>(description:CurrentD, value:any):GuaranteedType<CurrentD>{
     var errors:string[] = []
     findErrorsInTypes(description, value, 'Value', errors);
-    if(errors.length) throw new Error(`guarantee excpetion. ${errors.join(', ')}`);
+    guaranteeOnErrorListener(errors);
     return value;
 }

@@ -1,4 +1,4 @@
-import { Description, Opts, guarantee } from "../lib/guarantee-type";
+import { Description, Opts, guarantee, guaranteeOnError, throwAllErrorsInAString, consoleErrorAllErrors, ignoreAllErrors } from "../lib/guarantee-type";
 
 import * as assert from "assert";
 
@@ -49,7 +49,7 @@ describe("guarantee",function(){
             var value:any = 8.8;
             var badDescription = {float8:opts} as unknown as Description // Bad description
             assert.throws(function(){
-                // @ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
+                // ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
                 guarantee(badDescription, value)
             }, /float8 is not a valid type/);
         })
@@ -139,6 +139,35 @@ describe("guarantee",function(){
         it("reject wrong type", function(){
             var any:any = false;
             assert.throws(()=>guarantee({union:[{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
+        })
+    })
+    describe("configurable on error", function(){
+        beforeEach(function(){
+            guaranteeOnError(throwAllErrorsInAString);
+        })
+        it("can use any error", function(){
+            var description = {union:[{string:opts},{object:{x:{number:opts}}}]}
+            var viewed:string[] = ["x"];
+            function anyError(errors:string[]){
+                viewed = errors;
+            }
+            var any:any = false;
+            guaranteeOnError(anyError)
+            // @ts-ignore TODO: arreglar esto
+            var result:string|{x:number} = guarantee(description, any);
+            assert.deepStrictEqual(viewed, [
+                "Value(in union) is not \"string\"",
+                "Value(in union).x is undefined but type is not nullable"
+            ])
+        })
+        it("can log error", function(){
+            guaranteeOnError(consoleErrorAllErrors)
+            guarantee({boolean:opts}, 1);
+            guarantee({boolean:opts}, false);
+        })
+        it("can ignore error", function(){
+            guaranteeOnError(ignoreAllErrors)
+            guarantee({boolean:opts}, 1);
         })
     })
 })
