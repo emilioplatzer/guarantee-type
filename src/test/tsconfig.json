@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "../test-build-local",
+        "outDir": "../../test-build-local",
         "strict": true,
         "noImplicitAny": true,
         "strictFunctionTypes": true,

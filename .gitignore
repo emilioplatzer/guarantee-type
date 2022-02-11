@@ -107,4 +107,4 @@ local-*
 *-local
 *-local.*
 
-lib
+/lib

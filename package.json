@@ -10,8 +10,8 @@
     "main": "lib/guarantee-type.js",
     "types": "lib/guarantee-type.d.ts",
     "scripts": {
-        "prepare": "tsc -p src",
-        "test": "tsc -p src && tsc -p test && nyc mocha test-build-local/test",
+        "prepare": "tsc -p src/lib",
+        "test": "tsc -p src/lib && tsc -p src/test && nyc mocha test-build-local/test",
         "test-wc": "mocha test-build-local/test"
     },
     "nyc": {

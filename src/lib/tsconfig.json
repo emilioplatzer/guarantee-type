@@ -2,7 +2,7 @@
     "compilerOptions": {
         "declaration": true,
         "sourceMap": true,
-        "outDir": "../lib",
+        "outDir": "../../lib",
         "module": "umd",
         "strict": true,
         "inlineSourceMap": false,
