@@ -49,7 +49,7 @@ describe("guarantee",function(){
             var value:any = 8.8;
             var badDescription = {float8:opts} as unknown as Description // Bad description
             assert.throws(function(){
-                // ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
+                // @ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
                 guarantee(badDescription, value)
             }, /float8 is not a valid type/);
         })
@@ -106,6 +106,12 @@ describe("guarantee",function(){
             var description = {object:{alpha:{object:{betha:{string:opts}}}}}
             assert.throws(()=>guarantee(description, {alpha:{betha:false}} ), /guarantee excpetion. Value\.alpha\.betha is not "string"/);
         })
+        it("accepts complex object", function(){
+            var description = {object:{alpha:{object:{betha:{string:opts},gamma:{number:opts}}}}}
+            var value = {alpha:{betha:'x', gamma:1}}
+            var result:{alpha:{betha:string, gamma:number}} = guarantee(description, value);
+            assert.deepStrictEqual(result, value);
+        })
     })
     describe("array", function(){
         it("accept array", function(){
@@ -133,12 +139,12 @@ describe("guarantee",function(){
         it("accepts any type", function(){
             var result: string|number;
             var any:any = 42;
-            result = guarantee({union:[{string:opts},{number:opts}]}, any);
+            result = guarantee({union:{1:{string:opts},2:{number:opts}}}, any);
             assert.equal(result, any);
         })
         it("reject wrong type", function(){
             var any:any = false;
-            assert.throws(()=>guarantee({union:[{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
+            assert.throws(()=>guarantee({union:{1:{string:opts},2:{number:opts}}}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
         })
     })
     describe("configurable on error", function(){
@@ -146,14 +152,13 @@ describe("guarantee",function(){
             guaranteeOnError(throwAllErrorsInAString);
         })
         it("can use any error", function(){
-            var description = {union:[{string:opts},{object:{x:{number:opts}}}]}
+            var description = {union:{1:{string:opts},2:{object:{x:{number:opts}}}}}
             var viewed:string[] = ["x"];
             function anyError(errors:string[]){
                 viewed = errors;
             }
             var any:any = false;
             guaranteeOnError(anyError)
-            // @ts-ignore TODO: arreglar esto
             var result:string|{x:number} = guarantee(description, any);
             assert.deepStrictEqual(viewed, [
                 "Value(in union) is not \"string\"",

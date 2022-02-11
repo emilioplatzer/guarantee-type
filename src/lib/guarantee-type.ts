@@ -13,7 +13,7 @@ export type Description =
     { optional: Description } |
     { object: {[K in keyof any]: Description} } | 
     { array: Description } | 
-    { union: [Description, Description] | [Description, Description, Description] };
+    { union: {1:Description, 2:Description} | {1:Description, 2:Description, 3:Description} };
 
 export type GuaranteedType<CurrentD> = 
     CurrentD extends { string : Opts } ? string  :
@@ -25,8 +25,8 @@ export type GuaranteedType<CurrentD> =
     CurrentD extends { optional: infer T } ? GuaranteedType<T>|null|undefined :
     CurrentD extends { object: infer T} ? {[K in keyof T] : GuaranteedType<T[K]>} :
     CurrentD extends { array: infer T} ? GuaranteedType<T>[] :
-    CurrentD extends { union: [infer T1, infer T2]} ? GuaranteedType<T1> | GuaranteedType<T2> :
-    CurrentD extends { union: [infer T1, infer T2, infer T3]} ? GuaranteedType<T1> | GuaranteedType<T2> | GuaranteedType<T3> :
+    CurrentD extends { union: {1:infer T1, 2:infer T2}} ? GuaranteedType<T1> | GuaranteedType<T2> :
+    CurrentD extends { union: {1:infer T1, 2:infer T2, 3:infer T3}} ? GuaranteedType<T1> | GuaranteedType<T2> | GuaranteedType<T3> :
     unknown
 
 export function valueGuarantor(type:Values){
@@ -57,9 +57,16 @@ export var errorTypeFinder = {
     },
     union: function(descriptions:Description[], value:any, path:string, errors:string[]){
         var incompatibilities:string[] = []; 
+        /* array implementation:
         for(var i=0; i<descriptions.length; i++){
             findErrorsInTypes(descriptions[i], value, `${path}(in union)`, incompatibilities);
             if(incompatibilities.length == i) return;
+        }
+        */
+        var step = 0;
+        for(var n in descriptions){
+            findErrorsInTypes(descriptions[n], value, `${path}(in union)`, incompatibilities);
+            if(step++ == incompatibilities.length) return;
         }
         for(var i=0; i<incompatibilities.length; i++) errors.push(incompatibilities[i]);
     }
