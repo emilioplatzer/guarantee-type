@@ -11,7 +11,8 @@ export type Description =
     { symbol : Opts } |
     { nullable: Description } |
     { optional: Description } |
-    { object: {[K in keyof any]: Description}};
+    { object: {[K in keyof any]: Description} } | 
+    { array: Description };
 
 export type GuaranteedType1<CurrentD> = {[K in keyof CurrentD] : GuaranteedType<CurrentD[K]>}
 
@@ -24,6 +25,7 @@ export type GuaranteedType<CurrentD> =
     CurrentD extends { nullable: infer T } ? GuaranteedType<T>|null :
     CurrentD extends { optional: infer T } ? GuaranteedType<T>|null|undefined :
     CurrentD extends { object: infer T} ? {[K in keyof T] : GuaranteedType<T[K]>} :
+    CurrentD extends { array: infer T} ? GuaranteedType<T>[] :
     unknown
 
 export function guarantee<CurrentD extends Description>(description:CurrentD, value:any, path?:string):GuaranteedType<CurrentD>{
@@ -40,8 +42,14 @@ export function guarantee<CurrentD extends Description>(description:CurrentD, va
         if ( value == null ) throw new Error(`guarantee excpetion. ${path??'Value'} is ${value} but type is not nullable`);
         if ( "object" in description ){
             for ( var a in description.object ){
-                guarantee(description.object[a], value[a], (path?path+',':'')+a);
+                guarantee(description.object[a], value[a], (path?path+'.':'')+a);
             }
+        }else if ( "array" in description ){
+            if(value instanceof Array){
+                for ( var i = 0; i < value.length; i++ ){
+                    guarantee(description.array, value[i], (path?path:'')+`[${i}]`);
+                }
+            }else throw new Error(`guarantee excpetion. ${path??'Value'} is not an array and must be`);
         }else{
             if ( !(typeof value in description) ) throw new Error(`guarantee excpetion. ${path??'Value'} is not proper type`);
         }

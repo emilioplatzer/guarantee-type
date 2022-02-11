@@ -96,7 +96,29 @@ describe("guarantee",function(){
     describe("object with more than one level", function(){
         it("rejects deeply", function(){
             var description = {object:{alpha:{object:{betha:{string:opts}}}}}
-            assert.throws(()=>guarantee(description, {alpha:{betha:false}} ), /guarantee excpetion. alpha,betha is not proper type/);
+            assert.throws(()=>guarantee(description, {alpha:{betha:false}} ), /guarantee excpetion. alpha\.betha is not proper type/);
+        })
+    })
+    describe("array", function(){
+        it("accept array", function(){
+            var description = {array:{boolean:opts}};
+            var result:boolean[] = guarantee(description, [true, false]);
+        })
+        it("rejects non array", function(){
+            var description = {array:{boolean:opts}};
+            assert.throws(()=>guarantee(description, true), /guarantee excpetion. Value is not an array and must be/);
+        })
+        it("rejects wrong element", function(){
+            var description = {array:{boolean:opts}};
+            assert.throws(()=>guarantee(description, [true,'one']), /guarantee excpetion. \[1\] is not proper type/);
+        })
+        it("rejects wrong element in an object with array", function(){
+            var description = {object:{omega:{array:{boolean:opts}}}};
+            assert.throws(()=>guarantee(description, {omega:[[]]}), /guarantee excpetion. omega\[0\] is not proper type/);
+        })
+        it("rejects non array in object", function(){
+            var description = {object:{omega:{array:{boolean:opts}}}};
+            assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. omega is not an array and must be/);
         })
     })
 })
