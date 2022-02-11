@@ -148,7 +148,7 @@ describe("guarantee",function(){
         })
     })
     describe("configurable on error", function(){
-        beforeEach(function(){
+        afterEach(function(){
             guaranteeOnError(throwAllErrorsInAString);
         })
         it("can use any error", function(){
@@ -173,6 +173,33 @@ describe("guarantee",function(){
         it("can ignore error", function(){
             guaranteeOnError(ignoreAllErrors)
             guarantee({boolean:opts}, 1);
+        })
+    })
+    describe("class values", function(){
+        it("receives Date", function(){
+            var description = {class: Date};
+            var result:Date;
+            var value = new Date(1969,5,6)
+            result = guarantee(description, value);
+            assert.equal(result, value)
+        })
+        it("rejects non Date", function(){
+            var description = {class: Date};
+            var result:Date;
+            var value = 52;
+            assert.throws(()=>{
+                result = guarantee(description, value);
+            },/guarantee excpetion. Value is not "Date"/)
+        })
+        it("detects invalid class", function(){
+            var description = {object:{due:{class: Date}, pattern:{class:RegExp}, other:{class:RegExp}}};
+            var result:{due:Date, pattern:RegExp, other:Date} = {due:new Date(), pattern:/not/, other:new Date()}
+            var value = {due:new Date(), pattern:/mm-dd-yyyy/, other:new Date()};
+            assert.throws(()=>{
+                // @ts-expect-error INVALID CLASS
+                result = guarantee(description, value);
+            },/guarantee excpetion. Value.other is not "RegExp"/);
+            assert.notDeepEqual(value, result);
         })
     })
 })

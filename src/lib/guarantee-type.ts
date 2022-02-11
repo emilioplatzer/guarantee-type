@@ -13,7 +13,10 @@ export type Description =
     { optional: Description } |
     { object: {[K in keyof any]: Description} } | 
     { array: Description } | 
-    { union: {1:Description, 2:Description} | {1:Description, 2:Description, 3:Description} };
+    { union: {1:Description, 2:Description} | {1:Description, 2:Description, 3:Description} } |
+    { class: Function }
+
+export type Constructor<T> = new(...args: any[]) => T;
 
 export type GuaranteedType<CurrentD> = 
     CurrentD extends { string : Opts } ? string  :
@@ -27,6 +30,7 @@ export type GuaranteedType<CurrentD> =
     CurrentD extends { array: infer T} ? GuaranteedType<T>[] :
     CurrentD extends { union: {1:infer T1, 2:infer T2}} ? GuaranteedType<T1> | GuaranteedType<T2> :
     CurrentD extends { union: {1:infer T1, 2:infer T2, 3:infer T3}} ? GuaranteedType<T1> | GuaranteedType<T2> | GuaranteedType<T3> :
+    CurrentD extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     unknown
 
 export function valueGuarantor(type:Values){
@@ -69,6 +73,12 @@ export var errorTypeFinder = {
             if(step++ == incompatibilities.length) return;
         }
         for(var i=0; i<incompatibilities.length; i++) errors.push(incompatibilities[i]);
+    },
+    class: function guarantor(classConstructor:Function, value:any, path:string, errors:string[]){
+        if ( !(value instanceof classConstructor) ) errors.push(`${path} is not "${
+            /* istanbul ignore next */
+            classConstructor.name??'class'
+        }"`);
     }
 }
 
