@@ -12,9 +12,8 @@ export type Description =
     { nullable: Description } |
     { optional: Description } |
     { object: {[K in keyof any]: Description} } | 
-    { array: Description };
-
-export type GuaranteedType1<CurrentD> = {[K in keyof CurrentD] : GuaranteedType<CurrentD[K]>}
+    { array: Description } | 
+    { union: [Description, Description] | [Description, Description, Description] };
 
 export type GuaranteedType<CurrentD> = 
     CurrentD extends { string : Opts } ? string  :
@@ -26,33 +25,73 @@ export type GuaranteedType<CurrentD> =
     CurrentD extends { optional: infer T } ? GuaranteedType<T>|null|undefined :
     CurrentD extends { object: infer T} ? {[K in keyof T] : GuaranteedType<T[K]>} :
     CurrentD extends { array: infer T} ? GuaranteedType<T>[] :
+    CurrentD extends { union: [infer T1, infer T2]} ? GuaranteedType<T1> | GuaranteedType<T2> :
+    CurrentD extends { union: [infer T1, infer T2, infer T3]} ? GuaranteedType<T1> | GuaranteedType<T2> | GuaranteedType<T3> :
     unknown
 
-export function guarantee<CurrentD extends Description>(description:CurrentD, value:any, path?:string):GuaranteedType<CurrentD>{
+export function valueGuarantor(type:Values){
+    return function guarantor(opts:Opts, value:any, path:string, errors:string[]){
+        if ( (typeof value != type) ) errors.push(`${path} is not "${type}"`);
+    }
+}
+
+export var errorTypeFinder = {
+    // nullable: function(){},
+    // optiontal: function(){},
+    string :valueGuarantor('string'),
+    number :valueGuarantor('number'),
+    boolean:valueGuarantor('boolean'),
+    bigint :valueGuarantor('bigint'),
+    symbol :valueGuarantor('symbol'),
+    object: function(innerDescription:{[K:string] : Description}, value:any, path:string, errors:string[]){
+        for ( var a in innerDescription ){
+            findErrorsInTypes(innerDescription[a], value[a], path+'.'+a, errors);
+        }
+    },
+    array: function(innerDescription:Description, value:any, path:string, errors:string[]){
+        if(value instanceof Array){
+            for ( var i = 0; i < value.length; i++ ){
+                findErrorsInTypes(innerDescription, value[i], path+`[${i}]`, errors);
+            }
+        }else errors.push(`${path} is not an array and must be`);
+    },
+    union: function(descriptions:Description[], value:any, path:string, errors:string[]){
+        var incompatibilities:string[] = []; 
+        for(var i=0; i<descriptions.length; i++){
+            findErrorsInTypes(descriptions[i], value, `${path}(in union)`, incompatibilities);
+            if(incompatibilities.length == i) return;
+        }
+        for(var i=0; i<incompatibilities.length; i++) errors.push(incompatibilities[i]);
+    }
+}
+
+function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{
     if ( "nullable" in description ){
         if ( value === null ) return value
         else
-        // @ts-expect-error: Type instantiation is excessively deep and possibly infinite.ts(2589) 
-            return guarantee(description.nullable, value, path);
+            return findErrorsInTypes(description.nullable, value, path, errors);
     }else if ( "optional" in description){
         if ( value == null ) return value
         else
-            return guarantee(description.optional, value, path);
+            return findErrorsInTypes(description.optional, value, path, errors);
     }else{
-        if ( value == null ) throw new Error(`guarantee excpetion. ${path??'Value'} is ${value} but type is not nullable`);
-        if ( "object" in description ){
-            for ( var a in description.object ){
-                guarantee(description.object[a], value[a], (path?path+'.':'')+a);
+        if ( value == null ) errors.push(`${path} is ${value} but type is not nullable`)
+        else 
+        for(var firstTag in description){
+            if(firstTag in errorTypeFinder){
+                var theTag = firstTag as unknown as keyof typeof errorTypeFinder;
+                errorTypeFinder[theTag](description[firstTag], value, path, errors);
+            }else{
+                errors.push(`${firstTag} is not a valid type`)
             }
-        }else if ( "array" in description ){
-            if(value instanceof Array){
-                for ( var i = 0; i < value.length; i++ ){
-                    guarantee(description.array, value[i], (path?path:'')+`[${i}]`);
-                }
-            }else throw new Error(`guarantee excpetion. ${path??'Value'} is not an array and must be`);
-        }else{
-            if ( !(typeof value in description) ) throw new Error(`guarantee excpetion. ${path??'Value'} is not proper type`);
+            return ;
         }
     }
+}
+
+export function guarantee<CurrentD extends Description>(description:CurrentD, value:any):GuaranteedType<CurrentD>{
+    var errors:string[] = []
+    findErrorsInTypes(description, value, 'Value', errors);
+    if(errors.length) throw new Error(`guarantee excpetion. ${errors.join(', ')}`);
     return value;
 }
