@@ -1,7 +1,7 @@
 {
     "name": "guarantee-type",
     "description": "guarantee the type of a plain object",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "repository": "emilioplatzer/guarantee-type",
     "files": [
         "lib",
@@ -11,17 +11,25 @@
     "types": "lib/guarantee-type.d.ts",
     "scripts": {
         "prepare": "tsc -p src",
-        "test": "tsc -p src && tsc -p test && nyc mocha test-biuld-local/test"
+        "test": "tsc -p src && tsc -p test && nyc mocha test-build-local/test",
+        "test-wc": "mocha test-build-local/test"
     },
     "nyc": {
         "exclude": [
-            "test-biuld-local"
+            "test-build-local"
         ],
         "reporter": [
             "html",
             "lcov",
             "text-summary"
-        ]
+        ],
+        "extension": [
+            ".js",
+            ".ts"
+        ],
+        "sourceMap": true,
+        "instrument": true,
+        "check-coverage": true
     },
     "devDependencies": {
         "@types/node": "^17.0.17",

@@ -11,7 +11,7 @@ export type Description =
     { symbol : Opts } |
     { nullable: Description } |
     { optional: Description } |
-    { object: {[K in keyof {}]: Description}};
+    { object: {[K in keyof any]: Description}};
 
 export type GuaranteedType1<CurrentD> = {[K in keyof CurrentD] : GuaranteedType<CurrentD[K]>}
 
@@ -25,19 +25,26 @@ export type GuaranteedType<CurrentD> =
     CurrentD extends { optional: infer T } ? GuaranteedType<T>|null|undefined :
     CurrentD extends { object: infer T} ? {[K in keyof T] : GuaranteedType<T[K]>} :
     unknown
-// */    
 
-
-var s: GuaranteedType<{value:'string'}>;
-var n: GuaranteedType<{value:'number'}>;
-var u: GuaranteedType<{value:string}>;
-
-export function guarantee<CurrentD extends Description>(description:CurrentD, value:any):GuaranteedType<CurrentD>{
-    if ( "nullable" in description && value !== null )
+export function guarantee<CurrentD extends Description>(description:CurrentD, value:any, path?:string):GuaranteedType<CurrentD>{
+    if ( "nullable" in description ){
+        if ( value === null ) return value
+        else
         // @ts-expect-error: Type instantiation is excessively deep and possibly infinite.ts(2589) 
-        return guarantee(description.nullable, value);
-    if ( "optional" in description && value != null ) 
-        return guarantee(description.optional, value);
-    if ( typeof value != "object" && !(typeof value in description) ) throw new Error(`guarantee excpetion. Value is not proper type`);
+            return guarantee(description.nullable, value, path);
+    }else if ( "optional" in description){
+        if ( value == null ) return value
+        else
+            return guarantee(description.optional, value, path);
+    }else{
+        if ( value == null ) throw new Error(`guarantee excpetion. ${path??'Value'} is ${value} but type is not nullable`);
+        if ( "object" in description ){
+            for ( var a in description.object ){
+                guarantee(description.object[a], value[a], (path?path+',':'')+a);
+            }
+        }else{
+            if ( !(typeof value in description) ) throw new Error(`guarantee excpetion. ${path??'Value'} is not proper type`);
+        }
+    }
     return value;
 }
