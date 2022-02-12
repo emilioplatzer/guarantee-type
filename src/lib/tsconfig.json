@@ -5,6 +5,7 @@
         "outDir": "../../lib",
         "module": "umd",
         "strict": true,
+        "target": "ES2015",
         "inlineSourceMap": false,
         "noImplicitAny": true,
         "inlineSources": true,

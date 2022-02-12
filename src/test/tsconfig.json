@@ -2,6 +2,8 @@
     "compilerOptions": {
         "outDir": "../../test-build-local",
         "strict": true,
+        "target": "ES2015",
+        "module": "CommonJS",
         "noImplicitAny": true,
         "strictFunctionTypes": true,
         "strictBindCallApply": true,

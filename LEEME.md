@@ -85,16 +85,14 @@ and set types of received data.
 [!--lang:*-->
 
 ```ts
-import { guarantee, GuaranteedType } from "guarantee-type";
+import { guarantee, is, GuaranteedType } from "guarantee-type";
 
-var descriptionPerson = { 
-    object: {
-        name: { string: {} },
-        age: { optional: { number: {} },
-        active: { boolean: {} },
-        due: { class: Date }
-    }
-};
+var descriptionPerson = is.object({
+    name: is.string,
+    age: is.optional.number,
+    active: is.boolean,
+    due: is.class(Date)    // for Date class only you can write is.Date
+});
 
 type Person = GuaranteedType<typeof descriptionPerson>;
 
@@ -106,9 +104,44 @@ print(guarantee(descriptionPerson, JSON.parse(localStorage['person1']))); // �
 
 // Using https://node-postgres.com/
 const res = await client.query('SELECT $1::text as message', ['Hello world!'])
-console.log(guarantee({object:{message:{string:{}}}},res.rows[0]).messagggge)  // 👍 ok, typo detected!
+console.log(guarantee( is.object({message: is.string}), res.rows[0]).messagggge)  // 👍 ok, typo detected!
 
 ```
+<!--lang:es-->
+
+# Profundizando
+
+<!--lang:en--]
+
+# Deep into
+
+<!--lang:es-->
+
+El mecanismo `is` para describir los tipos es una abreviación. 
+Las descripciones se pueden escribir y transmitir en un objeto que puede
+codificarse en formato `JSON`. Por ejemplo la descripción `descriptionPerson`
+puede esciribirse directamente en un objetos simple:
+
+<!--lang:en--]
+
+Using `is` for describe the type is optional. 
+The descriptions can be defined in a plain _Javascript_ object that
+can be serializable and enceded with `JSON`. 
+For example `descriptionPerson` can be writen like this:
+
+[!--lang:*-->
+
+```ts
+var descriptionPerson = { 
+    object: {
+        name: { string: {} },
+        age: { optional: { number: {} },
+        active: { boolean: {} },
+        due: { class: Date }
+    }
+};
+```
+
 <!--lang:es-->
 
 ## Licencia

@@ -1,8 +1,47 @@
-import { Description, Opts, guarantee, guaranteeOnError, throwAllErrorsInAString, consoleErrorAllErrors, ignoreAllErrors } from "../lib/guarantee-type";
+import { Description, Opts, guarantee, guaranteeOnError, throwAllErrorsInAString, consoleErrorAllErrors, ignoreAllErrors,
+    is, nullOpts
+} from "../lib/guarantee-type";
 
 import * as assert from "assert";
 
 var opts:Opts;
+
+class ExampleForTest{}
+
+describe("internal representation of is", function(){
+    it("boolean", function(){
+        assert.deepEqual(is.boolean, {boolean: nullOpts})
+    })
+    it("nullable", function(){
+        assert.deepEqual(is.nullable.string, {nullable:{string: nullOpts}})
+    })
+    it("optional", function(){
+        assert.deepEqual(is.optional.number, {optional:{number: nullOpts}})
+    })
+    it("class", function(){
+        assert.deepEqual(is.class(ExampleForTest), {class:ExampleForTest})
+    })
+    it("Date", function(){
+        assert.deepEqual(is.Date, {class:Date})
+    })
+    it("object", function(){
+        assert.deepEqual(is.object({
+            name:is.string,
+            age:is.optional.number,
+            born:is.Date
+        }), {object:{
+            name:{string: nullOpts},
+            age:{optional:{number: nullOpts}},
+            born:{class:Date}
+        }})
+    })
+    it("string[]", function(){
+        assert.deepEqual(is.array.string, {array:{string: nullOpts}});
+    })
+    it("(bigint|null)[]", function(){
+        assert.deepEqual(is.array.nullable.bigint, {array:{nullable:{bigint: nullOpts}}});
+    })
+})
 
 describe("guarantee",function(){
     describe("values",function(){
@@ -11,6 +50,8 @@ describe("guarantee",function(){
             var value:any = "any string";
             result = guarantee({string:opts}, value);
             assert.equal(result, value);
+            result = guarantee(is.string, value);
+            assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
             var result:number; 
@@ -18,17 +59,22 @@ describe("guarantee",function(){
             // @ts-expect-error
             result = guarantee({string:opts}, value);
             // @ts-expect-error
+            result = guarantee(is.string, value);
+            // @ts-expect-error
             var results:string = guarantee({number:opts}, 42);
         })
         it("number cannot be assigned to string", function(){
             var value:any = 43;
             assert.throws(()=>guarantee({string:opts}, value), /guarantee excpetion. Value is not "string"/);
-            assert.throws(()=>guarantee({string:opts}, undefined), /guarantee excpetion. Value is undefined but type is not nullable/);
+            assert.throws(()=>guarantee(is.string, undefined), /guarantee excpetion. Value is undefined but type is not nullable/);
         })
         it("can set a optional variable", function(){
             var value:any = null;
             var result:boolean|null|undefined = guarantee({optional:{boolean:opts}}, value);
             assert.equal(result, value)
+            var optional = guarantee(is.optional.boolean, value);
+            optional = result;
+            assert.equal(optional, value)
         })
         it("detects TypeError can set a optional variable", function(){
             var value:any = true;
@@ -60,6 +106,11 @@ describe("guarantee",function(){
             age:  { number : opts },
             ready:{ boolean: opts },
         }}
+        var description1is = is.object({
+            name: is.string ,
+            age:  is.number ,
+            ready:is.boolean,
+        })
         type Type1 = {
             name: string
             age: number
@@ -78,11 +129,17 @@ describe("guarantee",function(){
             var result: Type2
             // @ts-expect-error
             result = guarantee(description1, value1);
+            // @ts-expect-error
+            result = guarantee(description1is, value1);
         })
         it("receive a good object", function(){
             var result: Type1
             result = guarantee(description1, value1 );
             assert.equal(result, value1);
+            var result2 = guarantee(description1is, value1 );
+            assert.equal(result2, value1);
+            // @ts-expect-error Esto está puesto para evitar que result2 sea null y esto lo detectaría al permitir asignar cualquier cosa.
+            result2 = {name:1, age:1, ready:1}
         })
         it("rejects a bad object", function(){
             var value = {
@@ -117,6 +174,13 @@ describe("guarantee",function(){
         it("accept array", function(){
             var description = {array:{boolean:opts}};
             var result:boolean[] = guarantee(description, [true, false]);
+            var autoResult = guarantee(is.array.boolean, [true, false]); // to ensure not 'any'
+            // @ts-expect-error
+            var wrongResult:string[] = autoResult // if the previous return 'any' this don't detect the error
+            var autoResult2 = guarantee(is.array.optional.boolean, [true, false]); // to ensure not 'any'
+            var rightResult2:(boolean|undefined|null)[] = autoResult2
+            // @ts-expect-error
+            var wrongResult2:boolean[] = autoResult2 // if the previous return 'any' this don't detect the error
         })
         it("rejects non array", function(){
             var description = {array:{boolean:opts}};
