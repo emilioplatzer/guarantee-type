@@ -11,15 +11,15 @@ guarantee the type of a plain object
 <!-- cucardas -->
 ![designing](https://img.shields.io/badge/stability-designing-red.svg)
 [![npm-version](https://img.shields.io/npm/v/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
-[![build](https://github.com/codenautas/guarantee-type/actions/workflows/node.js.yml/badge.svg)](https://github.com/codenautas/guarantee-type/actions/workflows/node.js.yml)
-[![coverage](https://img.shields.io/coveralls/codenautas/guarantee-type/master.svg)](https://coveralls.io/r/codenautas/guarantee-type)
-[![outdated-deps](https://img.shields.io/github/issues-search/codenautas/guarantee-type?color=9cf&label=outdated-deps&query=is%3Apr%20author%3Aapp%2Fdependabot%20is%3Aopen)](https://github.com/codenautas/guarantee-type/pulls/app%2Fdependabot)
+[![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/node.js.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/node.js.yml)
+[![coverage](https://img.shields.io/coveralls/emilioplatzer/guarantee-type/master.svg)](https://coveralls.io/r/emilioplatzer/guarantee-type)
+[![outdated-deps](https://img.shields.io/github/issues-search/emilioplatzer/guarantee-type?color=9cf&label=outdated-deps&query=is%3Apr%20author%3Aapp%2Fdependabot%20is%3Aopen)](https://github.com/emilioplatzer/guarantee-type/pulls/app%2Fdependabot)
 
 <!--multilang buttons-->
 
-idioma: ![castellano](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-es.png)
+idioma: ![castellano](https://raw.githubusercontent.com/emilioplatzer/multilang/master/img/lang-es.png)
 también disponible en:
-[![inglés](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-en.png)](README.md)
+[![inglés](https://raw.githubusercontent.com/emilioplatzer/multilang/master/img/lang-en.png)](README.md)
 
 <!--lang:es-->
 
