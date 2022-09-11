@@ -70,14 +70,19 @@ describe("guarantee",function(){
             assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
-            var result:number; 
+            var resultN:number = 0; 
             var value:any = "any string";
             // @ts-expect-error
-            result = guarantee({string:opts}, value);
+            resultN = guarantee({string:opts}, value);
             // @ts-expect-error
-            result = guarantee(is.string, value);
+            resultN = guarantee(is.string, value);
+            // This is JS, guarantee don't throws if the result variable is of different type
+            assert.strictEqual(resultN, "any string");
             // @ts-expect-error
-            var results:string = guarantee({number:opts}, 42);
+            var resultS:string = guarantee({number:opts}, 42);
+            // This is JS, guarantee don't throws if the result variable is of different type
+            assert.strictEqual(resultS, 42);
+            assert.notStrictEqual(resultS, "42");
         })
         it("number cannot be assigned to string", function(){
             var value:any = 43;
@@ -87,25 +92,29 @@ describe("guarantee",function(){
         it("can set a optional variable", function(){
             var value:any = null;
             var result:boolean|null|undefined = guarantee({optional:{boolean:opts}}, value);
-            assert.equal(result, value)
+            assert.strictEqual(result, value)
             var optional = guarantee(is.optional.boolean, value);
             optional = result;
-            assert.equal(optional, value)
+            assert.strictEqual(optional, value)
         })
         it("detects TypeError can set a optional variable", function(){
             var value:any = true;
             // @ts-expect-error
             var result:boolean|null = guarantee({optional:{boolean:opts}}, value);
+            // This is JS, guarantee don't throws if the result variable is of different type
+            assert.strictEqual(result, true);
         })
         it("can set a nullable variable", function(){
             var value:any = null;
             var result:boolean|null = guarantee({nullable:{boolean:opts}}, value);
-            assert.equal(result, value)
+            assert.strictEqual(result, value)
         })
         it("detects TypeError can set a nullable variable", function(){
             var value:any = true;
             // @ts-expect-error
             var result:boolean = guarantee({nullable:{boolean:opts}}, value);
+            // This is JS, guarantee don't throws if the result variable is of different type
+            assert.strictEqual(result, true);
         })
         it("invalid type in description", function(){
             var value:any = 8.8;
@@ -147,6 +156,8 @@ describe("guarantee",function(){
             result = guarantee(description1, value1);
             // @ts-expect-error
             result = guarantee(description1is, value1);
+            // This is JS, guarantee don't throws if the result variable is of different type
+            assert.deepStrictEqual(result, value1);
         })
         it("receive a good object", function(){
             var result: Type1
@@ -156,6 +167,7 @@ describe("guarantee",function(){
             assert.equal(result2, value1);
             // @ts-expect-error Esto está puesto para evitar que result2 sea null y esto lo detectaría al permitir asignar cualquier cosa.
             result2 = {name:1, age:1, ready:1}
+            assert.deepStrictEqual(result2, value1);
         })
         it("rejects a bad object", function(){
             var value = {
@@ -220,7 +232,7 @@ describe("guarantee",function(){
             var result: string|number;
             var any:any = 42;
             result = guarantee({union:{1:{string:opts},2:{number:opts}}}, any);
-            assert.equal(result, any);
+            assert.strictEqual(result, any);
         })
         it("reject wrong type", function(){
             var any:any = false;
@@ -261,7 +273,7 @@ describe("guarantee",function(){
             var result:Date;
             var value = new Date(1969,5,6)
             result = guarantee(description, value);
-            assert.equal(result, value)
+            assert.strictEqual(result, value)
         })
         it("rejects non Date", function(){
             var description = {class: Date};

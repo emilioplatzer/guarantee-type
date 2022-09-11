@@ -35,7 +35,7 @@ export type DefinedType<Description> =
     unknown
 
 export function valueGuarantor(type:Values){
-    return function guarantor(opts:Opts, value:any, path:string, errors:string[]){
+    return function guarantor(_opts:Opts, value:any, path:string, errors:string[]){
         if ( (typeof value != type) ) errors.push(`${path} is not "${type}"`);
     }
 }
@@ -115,7 +115,7 @@ export function consoleErrorAllErrors(errors:string[]){
     if(errors.length) console.error(`guarantee errors.`,errors);
 }
 
-export function ignoreAllErrors(errors:string[]){
+export function ignoreAllErrors(_errors:string[]){
 }
 
 var guaranteeOnErrorListener:(errors:string[]) => void = throwAllErrorsInAString;
@@ -218,7 +218,7 @@ const IS_PROXIED = Symbol('IS_PROXIED')
 
 function isModificator(name:(keyof IS)[]): IS {
     var proxy = new Proxy(is, {
-        get(target, prop:keyof IS | typeof IS_PROXIED, receiver) {
+        get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
             if(prop==IS_PROXIED){
                 return true;
             }else{

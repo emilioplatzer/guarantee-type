@@ -9,5 +9,16 @@
         "inlineSourceMap": false,
         "noImplicitAny": true,
         "inlineSources": true,
+        "noUnusedLocals": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        // "noUncheckedIndexedAccess": true,
+        "noUnusedParameters": true,
+        "noImplicitThis": true
     }
 }
