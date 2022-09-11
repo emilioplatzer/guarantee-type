@@ -227,11 +227,9 @@ function isModificator(name:(keyof IS)[]): IS {
                 if(value[IS_PROXIED]){
                     return isModificator([...name, prop]);
                 }else{
-                    console.log(name,'>', prop, value == proxy)
                     for(var i=name.length-1; i>=0; i--){
                         value = {[name[i]]: value} as Description;
                     }
-                    console.log(name,'<', prop, value)
                     return value;
                 }
             }
