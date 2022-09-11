@@ -19,19 +19,19 @@ export type Description =
 
 export type Constructor<T> = new(...args: any[]) => T;
 
-export type GuaranteedType<CurrentD> = 
-    CurrentD extends { string : Opts } ? string  :
-    CurrentD extends { number : Opts } ? number  :
-    CurrentD extends { boolean: Opts } ? boolean :
-    CurrentD extends { bigint : Opts } ? bigint  :
-    CurrentD extends { symbol : Opts } ? symbol  :
-    CurrentD extends { nullable: infer T } ? GuaranteedType<T>|null :
-    CurrentD extends { optional: infer T } ? GuaranteedType<T>|null|undefined :
-    CurrentD extends { object: infer T} ? {[K in keyof T] : GuaranteedType<T[K]>} :
-    CurrentD extends { array: infer T} ? GuaranteedType<T>[] :
-    CurrentD extends { union: {1:infer T1, 2:infer T2}} ? GuaranteedType<T1> | GuaranteedType<T2> :
-    CurrentD extends { union: {1:infer T1, 2:infer T2, 3:infer T3}} ? GuaranteedType<T1> | GuaranteedType<T2> | GuaranteedType<T3> :
-    CurrentD extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
+export type DefinedType<Description> = 
+    Description extends { string : Opts } ? string  :
+    Description extends { number : Opts } ? number  :
+    Description extends { boolean: Opts } ? boolean :
+    Description extends { bigint : Opts } ? bigint  :
+    Description extends { symbol : Opts } ? symbol  :
+    Description extends { nullable: infer T } ? DefinedType<T>|null :
+    Description extends { optional: infer T } ? DefinedType<T>|null|undefined :
+    Description extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
+    Description extends { array: infer T} ? DefinedType<T>[] :
+    Description extends { union: {1:infer T1, 2:infer T2}} ? DefinedType<T1> | DefinedType<T2> :
+    Description extends { union: {1:infer T1, 2:infer T2, 3:infer T3}} ? DefinedType<T1> | DefinedType<T2> | DefinedType<T3> :
+    Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     unknown
 
 export function valueGuarantor(type:Values){
@@ -124,7 +124,7 @@ export function guaranteeOnError(fun:(errors:string[]) => void){
     guaranteeOnErrorListener = fun;
 }
 
-export function guarantee<CurrentD extends Description>(description:CurrentD, value:any):GuaranteedType<CurrentD>{
+export function guarantee<CurrentD extends Description>(description:CurrentD, value:any):DefinedType<CurrentD>{
     var errors:string[] = []
     findErrorsInTypes(description, value, 'Value', errors);
     guaranteeOnErrorListener(errors);
@@ -162,11 +162,15 @@ type IS1 = {
 }
 
 type IS2 = IS1 & {
-    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}},
-    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}},
 }
 
 type IS = IS2 & {
+    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
+        array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
+    },
+    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
+        array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
+    },
     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},

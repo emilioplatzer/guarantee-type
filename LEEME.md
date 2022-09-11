@@ -17,9 +17,9 @@ guarantee the type of a plain object
 
 <!--multilang buttons-->
 
-idioma: ![castellano](https://raw.githubusercontent.com/emilioplatzer/multilang/master/img/lang-es.png)
+idioma: ![castellano](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-es.png)
 también disponible en:
-[![inglés](https://raw.githubusercontent.com/emilioplatzer/multilang/master/img/lang-en.png)](README.md)
+[![inglés](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-en.png)](README.md)
 
 <!--lang:es-->
 

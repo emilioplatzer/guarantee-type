@@ -1,8 +1,9 @@
 import { Description, Opts, guarantee, guaranteeOnError, throwAllErrorsInAString, consoleErrorAllErrors, ignoreAllErrors,
-    is, nullOpts
+    is, nullOpts, DefinedType
 } from "../lib/guarantee-type";
 
 import * as assert from "assert";
+import { IpcSocketConnectOpts } from "net";
 
 var opts:Opts;
 
@@ -40,6 +41,21 @@ describe("internal representation of is", function(){
     })
     it("(bigint|null)[]", function(){
         assert.deepEqual(is.array.nullable.bigint, {array:{nullable:{bigint: nullOpts}}});
+        var x: DefinedType<typeof is.array.nullable.bigint> = [];
+        var y: (bigint|null)[] = [];
+        // @ts-expect-error x is not any
+        var n:null = x;
+        x=y;
+        y=x; 
+    })
+    it("string[]|null", function(){
+        assert.deepEqual(is.nullable.array.string, {nullable:{array:{string: nullOpts}}});
+        var x:DefinedType<typeof is.nullable.array.string>
+        var y: string[]|null = [];
+        // @ts-expect-error x is not any
+        var n:null = x;
+        x=y;
+        y=x; 
     })
 })
 

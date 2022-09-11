@@ -9,9 +9,9 @@ guarantee the type of a plain object
 [![outdated-deps](https://img.shields.io/github/issues-search/emilioplatzer/guarantee-type?color=9cf&label=outdated-deps&query=is%3Apr%20author%3Aapp%2Fdependabot%20is%3Aopen)](https://github.com/emilioplatzer/guarantee-type/pulls/app%2Fdependabot)
 
 
-language: ![English](https://raw.githubusercontent.com/emilioplatzer/multilang/master/img/lang-en.png)
+language: ![English](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-en.png)
 also available in:
-[![Spanish](https://raw.githubusercontent.com/emilioplatzer/multilang/master/img/lang-es.png)](LEEME.md)
+[![Spanish](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-es.png)](LEEME.md)
 
 
 # Main goal
