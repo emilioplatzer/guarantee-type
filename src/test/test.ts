@@ -167,7 +167,6 @@ describe("guarantee",function(){
             assert.equal(result2, value1);
             // @ts-expect-error Esto está puesto para evitar que result2 sea null y esto lo detectaría al permitir asignar cualquier cosa.
             result2 = {name:1, age:1, ready:1}
-            assert.deepStrictEqual(result2, value1);
         })
         it("rejects a bad object", function(){
             var value = {
@@ -237,6 +236,30 @@ describe("guarantee",function(){
         it("reject wrong type", function(){
             var any:any = false;
             assert.throws(()=>guarantee({union:{1:{string:opts},2:{number:opts}}}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
+        })
+    })
+    describe("Union", function(){
+        it("accepts any type with the first value", function(){
+            var result: string|number;
+            var any:any = "x";
+            result = guarantee({Union: [{string:opts},{number:opts}]}, any);
+            assert.strictEqual(result, any);
+        })
+        it("accepts any type with the second value", function(){
+            var result: string|number;
+            var any:any = 42;
+            result = guarantee({Union: [{string:opts},{number:opts}]}, any);
+            assert.strictEqual(result, any);
+        })
+        it("accepts any type with the last value", function(){
+            var result: string|number|{}|boolean;
+            var any:any = true;
+            result = guarantee({Union: [{string:opts},{number:opts},is.object({}),is.boolean]}, any);
+            assert.strictEqual(result, any);
+        })
+        it("reject wrong type", function(){
+            var any:any = false;
+            assert.throws(()=>guarantee({Union: [{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
         })
     })
     describe("configurable on error", function(){

@@ -1,6 +1,6 @@
 
 export type Values = 'string'|'number'|'boolean'|'bigint'|'symbol'
-export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union'
+export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' | 'Union'
 
 export type Opts = any;
 
@@ -15,6 +15,8 @@ export type Description =
     { object: {[K in keyof any]: Description} } | 
     { array: Description } | 
     { union: {1:Description, 2:Description} | {1:Description, 2:Description, 3:Description} } |
+    // [ Description, Description ] |
+    { Union: Description [] } | 
     { class: Function }
 
 export type Constructor<T> = new(...args: any[]) => T;
@@ -31,6 +33,8 @@ export type DefinedType<Description> =
     Description extends { array: infer T} ? DefinedType<T>[] :
     Description extends { union: {1:infer T1, 2:infer T2}} ? DefinedType<T1> | DefinedType<T2> :
     Description extends { union: {1:infer T1, 2:infer T2, 3:infer T3}} ? DefinedType<T1> | DefinedType<T2> | DefinedType<T3> :
+    // Description extends [ infer T1, infer T2] ? DefinedType<T1> | DefinedType<T2> :
+    Description extends { Union: (infer T1) [] } ? DefinedType<T1> :
     Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     unknown
 
@@ -81,7 +85,13 @@ export var errorTypeFinder = {
             classConstructor.name??'class'
         }"`);
     }
-}
+} satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>>
+
+// @ts-ignore
+errorTypeFinder.Union = function(descriptions:Description[], value:any, path:string, errors:string[]){
+    return errorTypeFinder.union(descriptions, value, path, errors)
+};
+
 
 function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{
     if ( "nullable" in description ){
@@ -102,8 +112,43 @@ function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, v
             }else{
                 errors.push(`${firstTag} is not a valid type`)
             }
-            return ;
+            return;
         }
+        /* else if ( description instanceof Array ) {
+            var unionErrors:string[] = []
+            for (var alternative of description) {
+                var alternativeErrors:string[] = []
+                var alternativeValue = findErrorsInTypes(alternative, value, path, alternativeErrors)
+                if (alternativeErrors.length == 0) return alternativeValue
+                unionErrors = unionErrors.concat(alternativeErrors);
+            }
+            errors.push
+        } */ 
+        /*
+        else {
+            var theTag: keyof typeof errorTypeFinder | null = null
+            var theDescription: CurrentD | null = null;
+            if (description instanceof Array) {
+                theTag = "union"
+                theDescription = description;
+            } else {
+                for (var firstTag in description) {
+                    if (firstTag in errorTypeFinder) {
+                        // @ts-expect-error This should not be an error because firstTag is in errorTypeFinder then it is keyof typeof errorTypeFinder
+                        theTag = firstTag
+                        // @ts-expect-error This is an error because CurrentD can be an array
+                        theDescription = description[theTag]
+                    } else {
+                        errors.push(`${firstTag} is not a valid type`);
+                        return; 
+                    }
+                    break;
+                }
+            }
+            if (theTag == null) return;
+            errorTypeFinder[theTag](theDescription, value, path, errors);
+        } */
+
     }
 }
 
