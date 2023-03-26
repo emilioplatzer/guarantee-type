@@ -1,6 +1,6 @@
-
+export type Literal = number | string | boolean | null
 export type Values = 'string'|'number'|'boolean'|'bigint'|'symbol'
-export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' 
+export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' | 'literal'
 
 export type Opts = any;
 
@@ -15,7 +15,8 @@ export type Description =
     { object: {[K in keyof any]: Description} } | 
     { array: Description } | 
     { union: Description [] } | 
-    { class: Function }
+    { class: Function } | 
+    { literal: Literal }
 
 export type Constructor<T> = new(...args: any[]) => T;
 
@@ -31,6 +32,7 @@ export type DefinedType<Description> =
     Description extends { array: infer T} ? DefinedType<T>[] :
     Description extends { union: (infer T1) [] } ? DefinedType<T1> :
     Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
+    Description extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
     unknown
 
 export function valueGuarantor(type:Values){
@@ -79,6 +81,9 @@ export var errorTypeFinder = {
             /* istanbul ignore next */
             classConstructor.name??'class'
         }"`);
+    },
+    literal: function guarantor(description: Literal, value:any, path:string, errors:string[]){
+        if (value != description) errors.push(`${path} is not "${description}"`);
     }
 } satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>>
 
@@ -208,8 +213,9 @@ type IS = IS2 & {
     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
-    } ,
-    // union    : Description
+    },
+    union: <T>(description:T[]) => ( {union: T[]}),
+    literal: <T extends Literal>(description:T) => ( {literal: T} )
 }
 
 /*
@@ -241,9 +247,8 @@ export var is:IS = {
     object   : <T>(descriptions:T)=>( {object:descriptions}),
     // @ts-ignore TODO!!!!
     get array(){ return isModificator(['array'])},
-    /*
-    union    : {string   : {}},
-    */
+    union    : <T>(description:T[]) => ( {union: description} ),
+    literal  : <T extends Literal>(description:T) => ( {literal: description} ),
     class    : (c:Constructor<any>) => ({class: c}),
     Date     : {class: Date}
 }

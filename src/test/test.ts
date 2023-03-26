@@ -242,12 +242,34 @@ describe("guarantee",function(){
         it("accepts any type with the last value", function(){
             var result: string|number|{}|boolean;
             var any:any = true;
-            result = guarantee({union: [is.string,is.number,is.object({}),is.boolean]}, any);
+            result = guarantee(is.union([is.string,is.number,is.object({}),is.boolean]), any);
             assert.strictEqual(result, any);
         })
         it("reject wrong type", function(){
             var any:any = false;
             assert.throws(()=>guarantee({union: [{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
+        })
+    })
+    describe("literal", function(){
+        it("accept literal number", function(){
+            var result: 42;
+            var any:any = 42;
+            result = guarantee({literal: 42 as 42}, any);
+            assert.strictEqual(result, any);
+        })
+        it("rejects other literal number", function(){
+            var result: 43;
+            var any:any = 43;
+            assert.throws(()=>{
+                // @ts-expect-error 42 is not 43
+                result = guarantee({literal: 42 as 42}, any);
+            })
+        })
+        it("accept literal in union", function(){
+            var result: "one"|"two";
+            var any:any = "one";
+            result = guarantee(is.union([is.literal("one" as "one"), is.literal("two" as "two")]), any);
+            assert.strictEqual(result, any);
         })
     })
     describe("configurable on error", function(){
