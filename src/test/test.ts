@@ -227,39 +227,27 @@ describe("guarantee",function(){
         })
     })
     describe("union", function(){
-        it("accepts any type", function(){
-            var result: string|number;
-            var any:any = 42;
-            result = guarantee({union:{1:{string:opts},2:{number:opts}}}, any);
-            assert.strictEqual(result, any);
-        })
-        it("reject wrong type", function(){
-            var any:any = false;
-            assert.throws(()=>guarantee({union:{1:{string:opts},2:{number:opts}}}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
-        })
-    })
-    describe("Union", function(){
         it("accepts any type with the first value", function(){
             var result: string|number;
             var any:any = "x";
-            result = guarantee({Union: [{string:opts},{number:opts}]}, any);
+            result = guarantee({union: [{string:opts},{number:opts}]}, any);
             assert.strictEqual(result, any);
         })
         it("accepts any type with the second value", function(){
             var result: string|number;
             var any:any = 42;
-            result = guarantee({Union: [{string:opts},{number:opts}]}, any);
+            result = guarantee({union: [{string:opts},{number:opts}]}, any);
             assert.strictEqual(result, any);
         })
         it("accepts any type with the last value", function(){
             var result: string|number|{}|boolean;
             var any:any = true;
-            result = guarantee({Union: [{string:opts},{number:opts},is.object({}),is.boolean]}, any);
+            result = guarantee({union: [is.string,is.number,is.object({}),is.boolean]}, any);
             assert.strictEqual(result, any);
         })
         it("reject wrong type", function(){
             var any:any = false;
-            assert.throws(()=>guarantee({Union: [{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
+            assert.throws(()=>guarantee({union: [{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
         })
     })
     describe("configurable on error", function(){
@@ -267,7 +255,7 @@ describe("guarantee",function(){
             guaranteeOnError(throwAllErrorsInAString);
         })
         it("can use any error", function(){
-            var description = {union:{1:{string:opts},2:{object:{x:{number:opts}}}}}
+            var description = {union:[{string:opts},{object:{x:{number:opts}}}]}
             var viewed:string[] = ["x"];
             function anyError(errors:string[]){
                 viewed = errors;

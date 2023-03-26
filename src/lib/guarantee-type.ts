@@ -1,6 +1,6 @@
 
 export type Values = 'string'|'number'|'boolean'|'bigint'|'symbol'
-export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' | 'Union'
+export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' 
 
 export type Opts = any;
 
@@ -14,9 +14,7 @@ export type Description =
     { optional: Description } |
     { object: {[K in keyof any]: Description} } | 
     { array: Description } | 
-    { union: {1:Description, 2:Description} | {1:Description, 2:Description, 3:Description} } |
-    // [ Description, Description ] |
-    { Union: Description [] } | 
+    { union: Description [] } | 
     { class: Function }
 
 export type Constructor<T> = new(...args: any[]) => T;
@@ -31,10 +29,7 @@ export type DefinedType<Description> =
     Description extends { optional: infer T } ? DefinedType<T>|null|undefined :
     Description extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
     Description extends { array: infer T} ? DefinedType<T>[] :
-    Description extends { union: {1:infer T1, 2:infer T2}} ? DefinedType<T1> | DefinedType<T2> :
-    Description extends { union: {1:infer T1, 2:infer T2, 3:infer T3}} ? DefinedType<T1> | DefinedType<T2> | DefinedType<T3> :
-    // Description extends [ infer T1, infer T2] ? DefinedType<T1> | DefinedType<T2> :
-    Description extends { Union: (infer T1) [] } ? DefinedType<T1> :
+    Description extends { union: (infer T1) [] } ? DefinedType<T1> :
     Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     unknown
 
@@ -86,12 +81,6 @@ export var errorTypeFinder = {
         }"`);
     }
 } satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>>
-
-// @ts-ignore
-errorTypeFinder.Union = function(descriptions:Description[], value:any, path:string, errors:string[]){
-    return errorTypeFinder.union(descriptions, value, path, errors)
-};
-
 
 function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{
     if ( "nullable" in description ){
