@@ -9,7 +9,7 @@ guarantee the type of a plain object
 [!--lang:*-->
 
 <!-- cucardas -->
-![designing](https://img.shields.io/badge/stability-designing-red.svg)
+![extending](https://img.shields.io/badge/stability-extending-orange.svg)
 [![npm-version](https://img.shields.io/npm/v/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
 [![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/node.js.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/node.js.yml)
 [![coverage](https://img.shields.io/coveralls/emilioplatzer/guarantee-type/master.svg)](https://coveralls.io/r/emilioplatzer/guarantee-type)

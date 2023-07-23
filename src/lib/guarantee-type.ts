@@ -196,23 +196,29 @@ type IS1 = {
     bigint   : {bigint:Opts},
     symbol   : {symbol:Opts},
     class    : (c: Constructor<any>)=>Description,
-    Date     : Description,
-    object   : <T>(descriptions:T)=>( {object:T} )
+    Date     : Description
 }
 
 type IS2 = IS1 & {
+    object   : <T>(descriptions:T)=>( {object:T} )
 }
 
 type IS = IS2 & {
     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
         array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {nullable:{object:T}} )
     },
     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
-        array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
+        array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {optional:{object:T}} )
     },
     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {array:{object:T}} )
     },
     union: <T>(description:T[]) => ( {union: T[]}),
     literal: <T extends Literal>(description:T) => ( {literal: T} )
@@ -266,10 +272,17 @@ function isModificator(name:(keyof IS)[]): IS {
                 if(value[IS_PROXIED]){
                     return isModificator([...name, prop]);
                 }else{
-                    for(var i=name.length-1; i>=0; i--){
-                        value = {[name[i]]: value} as Description;
+                    var wrap = (value:any) => {
+                        for(var i=name.length-1; i>=0; i--){
+                            value = {[name[i]]: value} as Description;
+                        }
+                        return value;
                     }
-                    return value;
+                    if (prop == 'object') {
+                        return (x:any) => wrap({object: x})
+                    } else {
+                        return wrap(value)
+                    }
                 }
             }
         }        

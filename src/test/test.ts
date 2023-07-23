@@ -57,6 +57,20 @@ describe("internal representation of is", function(){
         x=y;
         y=x; 
     })
+    it("optional object", function(){
+        var description = is.optional.object({name:is.string});
+        assert.deepEqual(description, {optional:{object:{name: {string:nullOpts}}}})
+        var resultNull = guarantee(description, null)
+        assert.deepEqual(resultNull, null);
+        var resultOk = guarantee(description, {name:'the name'});
+        assert.deepEqual(resultOk, {name:'the name'});
+    })
+    it("{}[]", function(){
+        var description = is.array.object({name:is.string});
+        assert.deepEqual(description, {array:{object:{name: {string:nullOpts}}}})
+        var resultOk = guarantee(description, [{name:'the name'}, {name:'name'}]);
+        assert.deepEqual(resultOk, [{name:'the name'}, {name:'name'}]);
+    })
 })
 
 describe("guarantee",function(){
