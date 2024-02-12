@@ -33,10 +33,10 @@
     },
     "devDependencies": {
         "@types/mocha": "^10.0.1",
-        "@types/node": "^20.4.4",
+        "@types/node": "^20.6.0",
         "expect.js": "^0.3.1",
         "mocha": "^10.2.0",
         "nyc": "^15.1.0",
-        "typescript": "^5.1.6"
+        "typescript": "^5.2.2"
     }
 }

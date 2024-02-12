@@ -141,8 +141,24 @@ var descriptionPerson = {
     }
 };
 ```
-
 <!--lang:es-->
+
+## Otros
+
+   * [typed-validators](https://www.npmjs.com/package/typed-validators): Similar a *guarantee-type* 
+       pero el objeto descripción no es serializable.
+   * [as-typed](https://www.npmjs.com/package/as-typed): validador estático de tipos para [JSON Schema](https://json-schema.org).
+
+
+<!--lang:en--]
+
+## Others
+
+   * [typed-validators](https://www.npmjs.com/package/typed-validators): similar to *guarantee-type*,
+     but the description is not a serializable object
+   * [as-typed](https://www.npmjs.com/package/as-typed): static typed validator from [JSON Schema](https://json-schema.org).
+
+[!--lang:es-->
 
 ## Licencia
 

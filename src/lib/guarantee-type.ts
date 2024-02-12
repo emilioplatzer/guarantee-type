@@ -4,17 +4,21 @@ export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'clas
 
 export type Opts = any;
 
+export type FunOpts = Opts | ((opts:Opts) => Opts)
+
+export type OptsDescription = Opts | Description;
+
 export type Description = 
     { string : Opts } |
     { number : Opts } |
     { boolean: Opts } |
     { bigint : Opts } |
     { symbol : Opts } |
-    { nullable: Description } |
-    { optional: Description } |
-    { object: {[K in keyof any]: Description} } | 
-    { array: Description } | 
-    { union: Description [] } | 
+    { nullable: OptsDescription } |
+    { optional: OptsDescription } |
+    { object: {[K in keyof any]: OptsDescription} } | 
+    { array: OptsDescription } | 
+    { union: OptsDescription [] } | 
     { class: Function } | 
     { literal: Literal }
 
@@ -189,9 +193,17 @@ type IS = {
 }
 */
 
+type Funcy<T> = T | ((opts?:Opts) => T);
+
+type ApplyFuncy<T> = {
+    // [K in keyof T]: (T[K] | (((opts:Opts)=>T[K])))
+    [K in keyof T]: Funcy<T[K]>
+ };
+ 
+
 type IS1 = {
     string   : {string:Opts},
-    number   : {number:Opts},
+    number   : Funcy<{number:Opts}>,
     boolean  : {boolean:Opts},
     bigint   : {bigint:Opts},
     symbol   : {symbol:Opts},
@@ -219,7 +231,7 @@ type IS = IS2 & {
         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
     } & {
         object:<T>(descriptions:T)=>( {array:{object:T}} )
-    },
+    } & (<T>(description:T) => {array:T}),
     union: <T>(description:T[]) => ( {union: T[]}),
     literal: <T extends Literal>(description:T) => ( {literal: T} )
 }
@@ -240,9 +252,18 @@ type I3={
 }
 */
 
-export var is:IS = {
+
+function typeDefiner<key extends keyof IS>(maker:(opts?:Opts)=>IS[key]):(opts?:Opts)=>IS[key]{
+    return maker;
+}
+
+// type TypeDefiner<key extends keyof IS> = IS[key] | ((opts:Opts) => IS[key]);
+
+// export type FUNIS = Funny<IS>;
+
+export var is: IS = {
     string   : {string  : {}},
-    number   : {number  : {}},
+    number   : typeDefiner<'number'>((opts?:Opts)=>({number  : opts ?? {}})),
     boolean  : {boolean : {}},
     bigint   : {bigint  : {}},
     symbol   : {symbol  : {}},
@@ -261,15 +282,23 @@ export var is:IS = {
 
 const IS_PROXIED = Symbol('IS_PROXIED')
 
-function isModificator(name:(keyof IS)[]): IS {
+/**
+ * While processing is.array.string:
+ * is.array is a proxy that remembers the path ['array'] we called p(['array'])
+ * is.array -> p(['array'])
+ * is.array.string -> p(['array']).string 
+ */
+function isModificator(name:(keyof IS)[]): typeof is {
     var proxy = new Proxy(is, {
         get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
             if(prop==IS_PROXIED){
                 return true;
             }else{
                 var value = is[prop];
+                // if (value instanceof Function) {
+                // return {}
                 // @ts-expect-error IS_PROXIED is an internal flag for chain propierties
-                if(value[IS_PROXIED]){
+                if(value[IS_PROXIED]) {
                     return isModificator([...name, prop]);
                 }else{
                     var wrap = (value:any) => {
@@ -285,7 +314,7 @@ function isModificator(name:(keyof IS)[]): IS {
                     }
                 }
             }
-        }        
+        }
     });
     return proxy;
 }

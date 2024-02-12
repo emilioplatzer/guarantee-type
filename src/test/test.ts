@@ -5,7 +5,7 @@ import { Description, Opts, guarantee, guaranteeOnError, throwAllErrorsInAString
 import * as assert from "assert";
 import { IpcSocketConnectOpts } from "net";
 
-var opts:Opts;
+var opts:Opts = {};
 
 class ExampleForTest{}
 
@@ -15,6 +15,12 @@ describe("internal representation of is", function(){
     })
     it("nullable", function(){
         assert.deepEqual(is.nullable.string, {nullable:{string: nullOpts}})
+    })
+    it("number", function(){
+        assert.deepEqual(is.number, {number: nullOpts})
+    })
+    it("number as function", function(){
+        assert.deepEqual(is.number(), {number: nullOpts})
     })
     it("optional", function(){
         assert.deepEqual(is.optional.number, {optional:{number: nullOpts}})
@@ -37,7 +43,22 @@ describe("internal representation of is", function(){
         }})
     })
     it("string[]", function(){
-        assert.deepEqual(is.array.string, {array:{string: nullOpts}});
+        var rawDescription = {array:{string: nullOpts}}
+        assert.deepEqual(is.array.string, rawDescription);
+        var z: DefinedType<typeof rawDescription> = [];
+        var y: string[] = [];
+        z = y;
+        y = z;
+        // @ts-expect-error x is not any
+        var n1:null = z;
+        var x = [] as DefinedType<typeof is.array.string>;
+        // @ts-expect-error x is not any
+        var n:null = x;
+        x=y;
+        y=x; 
+    })
+    it("string[] composed", function(){
+        // assert.deepEqual(is.array(is.string), {array:{string: nullOpts}});
     })
     it("(bigint|null)[]", function(){
         assert.deepEqual(is.array.nullable.bigint, {array:{nullable:{bigint: nullOpts}}});
@@ -134,7 +155,7 @@ describe("guarantee",function(){
             var value:any = 8.8;
             var badDescription = {float8:opts} as unknown as Description // Bad description
             assert.throws(function(){
-                // @ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
+                // // @ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
                 guarantee(badDescription, value)
             }, /float8 is not a valid type/);
         })
@@ -212,12 +233,13 @@ describe("guarantee",function(){
         })
     })
     describe("array", function(){
-        it("accept array", function(){
+        it("accepts array", function(){
             var description = {array:{boolean:opts}};
             var result:boolean[] = guarantee(description, [true, false]);
             var autoResult = guarantee(is.array.boolean, [true, false]); // to ensure not 'any'
             // @ts-expect-error
             var wrongResult:string[] = autoResult // if the previous return 'any' this don't detect the error
+            assert.deepStrictEqual(is.array.optional.boolean, {array:{ optional: { boolean: opts}}});
             var autoResult2 = guarantee(is.array.optional.boolean, [true, false]); // to ensure not 'any'
             var rightResult2:(boolean|undefined|null)[] = autoResult2
             // @ts-expect-error
