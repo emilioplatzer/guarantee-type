@@ -134,7 +134,6 @@ describe("guarantee",function(){
             var value:any = 8.8;
             var badDescription = {float8:opts} as unknown as Description // Bad description
             assert.throws(function(){
-                // @ts-expect-error Type instantiation is excessively deep and possibly infinite.ts(2589)
                 guarantee(badDescription, value)
             }, /float8 is not a valid type/);
         })
@@ -322,6 +321,13 @@ describe("guarantee",function(){
             result = guarantee(description, value);
             assert.strictEqual(result, value)
         })
+        it("receives is.Date", function(){
+            var description = is.Date;
+            var result:Date;
+            var value = new Date(1969,5,6)
+            result = guarantee(description, value);
+            assert.strictEqual(result, value)
+        })
         it("rejects non Date", function(){
             var description = {class: Date};
             var result:Date;
@@ -339,6 +345,26 @@ describe("guarantee",function(){
                 result = guarantee(description, value);
             },/guarantee excpetion. Value.other is not "RegExp"/);
             assert.notDeepEqual(value, result);
+        })
+        it("works with dates in an object", function(){
+            var description = is.object({
+                name: is.string,
+                birthdate: is.Date,
+                age: is.number
+            });
+            var result: {name:string, birthdate: Date, age: number};
+            function nullObject<T extends Description>(description:T):DefinedType<T>{
+                // @ts-expect-error this is a naive implementation. 
+                var result: DefinedType<T> = {}
+                for (var key in description) {
+                    result[key] = null;
+                }
+                return result;
+            }
+            var obtained = nullObject(description);
+            // @ts-expect-error It expects that birthdate is not any
+            var no_number:number = obtained.birthdate;
+            result = obtained;
         })
     })
 })

@@ -9,6 +9,6 @@
         "strictBindCallApply": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": true,
-        "noUnusedLocals": false
+        "noUnusedLocals": false,
     }
 }

@@ -2,7 +2,7 @@ export type Literal = number | string | boolean | null
 export type Values = 'string'|'number'|'boolean'|'bigint'|'symbol'
 export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' | 'literal'
 
-export type Opts = any;
+export type Opts = {};
 
 export type Description = 
     { string : Opts } |
@@ -102,6 +102,7 @@ function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, v
         for(var firstTag in description){
             if(firstTag in errorTypeFinder){
                 var theTag = firstTag as unknown as keyof typeof errorTypeFinder;
+                // @ts-expect-error description[firstTag] may or may not be the expected type
                 errorTypeFinder[theTag](description[firstTag], value, path, errors);
             }else{
                 errors.push(`${firstTag} is not a valid type`)
@@ -196,7 +197,7 @@ type IS1 = {
     bigint   : {bigint:Opts},
     symbol   : {symbol:Opts},
     class    : (c: Constructor<any>)=>Description,
-    Date     : Description
+    Date     : {class: Constructor<Date>}
 }
 
 type IS2 = IS1 & {
