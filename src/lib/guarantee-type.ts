@@ -1,6 +1,6 @@
 export type Literal = number | string | boolean | null
 export type Values = 'string'|'number'|'boolean'|'bigint'|'symbol'
-export type Keys = Values | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' | 'literal'
+export type Keys = Values | 'recordString' | 'nullable' | 'optional' | 'object' | 'array' | 'class' | 'union' | 'literal'
 
 export type Opts = {};
 
@@ -10,6 +10,7 @@ export type Description =
     { boolean: Opts } |
     { bigint : Opts } |
     { symbol : Opts } |
+    { recordString : Description } |
     { nullable: Description } |
     { optional: Description } |
     { object: {[K in keyof any]: Description} } | 
@@ -30,6 +31,7 @@ export type DefinedType<Description> =
     Description extends { optional: infer T } ? DefinedType<T>|null|undefined :
     Description extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
     Description extends { array: infer T} ? DefinedType<T>[] :
+    Description extends { recordString : infer T } ? Record<string, DefinedType<T>> :
     Description extends { union: (infer T1) [] } ? DefinedType<T1> :
     Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     Description extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
@@ -49,6 +51,13 @@ export var errorTypeFinder = {
     boolean:valueGuarantor('boolean'),
     bigint :valueGuarantor('bigint'),
     symbol :valueGuarantor('symbol'),
+    recordString: function(innerDescription:Description, value:any, path:string, errors:string[]){
+        if(!(value instanceof Array) && (value instanceof Object) && value){
+            for (var a in value) {
+                findErrorsInTypes(innerDescription, value[a], path+`[${a}]`, errors);
+            }
+        }else errors.push(`${path} is not a Record<string,T> and must be`);
+    },
     object: function(innerDescription:{[K:string] : Description}, value:any, path:string, errors:string[]){
         for ( var a in innerDescription ){
             findErrorsInTypes(innerDescription[a], value[a], path+'.'+a, errors);
@@ -205,6 +214,12 @@ type IS2 = IS1 & {
 }
 
 type IS = IS2 & {
+    recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
+        nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
+        optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {recordString:{object:T}} )
+    },
     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
         array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
     } & {
@@ -247,6 +262,8 @@ export var is:IS = {
     boolean  : {boolean : {}},
     bigint   : {bigint  : {}},
     symbol   : {symbol  : {}},
+    // @ts-ignore TODO!!!!
+    get recordString(){ return isModificator(['recordString'])},
     // @ts-ignore TODO!!!!
     get nullable(){ return isModificator(['nullable'])},
     // @ts-ignore TODO!!!!

@@ -239,6 +239,35 @@ describe("guarantee",function(){
             assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. Value\.omega is not an array and must be/);
         })
     })
+    describe("recordString", function(){
+        it("accept recordString", function(){
+            var description = {recordString:{boolean:opts}};
+            var result:Record<string, boolean> = guarantee(description, {yes:true, no:false});
+            var autoResult = guarantee(is.recordString.boolean, {yes:true, no:false}); // to ensure not 'any'
+            // @ts-expect-error
+            var wrongResult:Record<string, string> = autoResult // if the previous return 'any' this don't detect the error
+            var autoResult2 = guarantee(is.recordString.optional.boolean, {yes:true, no:false}); // to ensure not 'any'
+            var rightResult2:Record<string, (boolean|undefined|null)> = autoResult2
+            // @ts-expect-error
+            var wrongResult2:Record<string, boolean> = autoResult2 // if the previous return 'any' this don't detect the error
+        })
+        it("rejects non recordString", function(){
+            var description = {recordString:{boolean:opts}};
+            assert.throws(()=>guarantee(description, true), /guarantee excpetion. Value is not a Record<string,T> and must be/);
+        })
+        it("rejects wrong element", function(){
+            var description = {array:{boolean:opts}};
+            assert.throws(()=>guarantee(description, [true,'one']), /guarantee excpetion. Value\[1\] is not "boolean"/);
+        })
+        it("rejects wrong element in an object with recordString", function(){
+            var description = {object:{omega:{recordString:{boolean:opts}}}};
+            assert.throws(()=>guarantee(description, {omega:{one:[]}}), /guarantee excpetion. Value\.omega\[one\] is not "boolean"/);
+        })
+        it("rejects non recordString in object", function(){
+            var description = {object:{omega:{recordString:{boolean:opts}}}};
+            assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. Value\.omega is not a Record<string,T> and must be/);
+        })
+    })
     describe("union", function(){
         it("accepts any type with the first value", function(){
             var result: string|number;
