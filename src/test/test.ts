@@ -59,7 +59,7 @@ describe("internal representation of is", function(){
     })
     it("optional object", function(){
         var description = is.optional.object({name:is.string});
-        assert.deepEqual(description, {optional:{object:{name: {string:nullOpts}}}})
+        assert.deepEqual(description, {optional:{object:{name: {string:nullOpts}}, optionals:{}}})
         var resultNull = guarantee(description, null)
         assert.deepEqual(resultNull, null);
         var resultOk = guarantee(description, {name:'the name'});
@@ -110,6 +110,14 @@ describe("guarantee",function(){
             var optional = guarantee(is.optional.boolean, value);
             optional = result;
             assert.strictEqual(optional, value)
+        })
+        it("can set a optional property", function(){
+            var value:{sure:boolean, maybe?:boolean} = {sure:true};
+            var result:{sure:boolean, maybe?:boolean} = guarantee({object:{sure:{boolean:opts}}, optionals:{maybe:{boolean:opts}}}, value);
+            assert.strictEqual(result, value)
+            var result2 = guarantee(is.object({sure:is.boolean}, {maybe:is.optional.boolean}), value);
+            result2 = result;
+            assert.strictEqual(result2, value)
         })
         it("detects TypeError can set a optional variable", function(){
             var value:any = true;
