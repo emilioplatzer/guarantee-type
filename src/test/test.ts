@@ -151,7 +151,7 @@ describe("guarantee",function(){
             name: { string : opts },
             age:  { number : opts },
             ready:{ boolean: opts },
-        }}
+        }, optionals:{}}
         var description1is = is.object({
             name: is.string ,
             age:  is.number ,
@@ -208,11 +208,11 @@ describe("guarantee",function(){
     })
     describe("object with more than one level", function(){
         it("rejects deeply", function(){
-            var description = {object:{alpha:{object:{betha:{string:opts}}}}}
+            var description = {object:{alpha:{object:{betha:{string:opts}}, optionals:{}}}, optionals:{}}
             assert.throws(()=>guarantee(description, {alpha:{betha:false}} ), /guarantee excpetion. Value\.alpha\.betha is not "string"/);
         })
         it("accepts complex object", function(){
-            var description = {object:{alpha:{object:{betha:{string:opts},gamma:{number:opts}}}}}
+            var description = {object:{alpha:{object:{betha:{string:opts},gamma:{number:opts}}, optionals:{}}}, optionals:{}}
             var value = {alpha:{betha:'x', gamma:1}}
             var result:{alpha:{betha:string, gamma:number}} = guarantee(description, value);
             assert.deepStrictEqual(result, value);
@@ -239,11 +239,11 @@ describe("guarantee",function(){
             assert.throws(()=>guarantee(description, [true,'one']), /guarantee excpetion. Value\[1\] is not "boolean"/);
         })
         it("rejects wrong element in an object with array", function(){
-            var description = {object:{omega:{array:{boolean:opts}}}};
+            var description = {object:{omega:{array:{boolean:opts}}}, optionals:{}};
             assert.throws(()=>guarantee(description, {omega:[[]]}), /guarantee excpetion. Value\.omega\[0\] is not "boolean"/);
         })
         it("rejects non array in object", function(){
-            var description = {object:{omega:{array:{boolean:opts}}}};
+            var description = {object:{omega:{array:{boolean:opts}}}, optionals:{}};
             assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. Value\.omega is not an array and must be/);
         })
     })
@@ -268,11 +268,11 @@ describe("guarantee",function(){
             assert.throws(()=>guarantee(description, [true,'one']), /guarantee excpetion. Value\[1\] is not "boolean"/);
         })
         it("rejects wrong element in an object with recordString", function(){
-            var description = {object:{omega:{recordString:{boolean:opts}}}};
+            var description = {object:{omega:{recordString:{boolean:opts}}}, optionals:{}};
             assert.throws(()=>guarantee(description, {omega:{one:[]}}), /guarantee excpetion. Value\.omega\[one\] is not "boolean"/);
         })
         it("rejects non recordString in object", function(){
-            var description = {object:{omega:{recordString:{boolean:opts}}}};
+            var description = {object:{omega:{recordString:{boolean:opts}}}, optionals:{}};
             assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. Value\.omega is not a Record<string,T> and must be/);
         })
     })
@@ -327,7 +327,7 @@ describe("guarantee",function(){
             guaranteeOnError(throwAllErrorsInAString);
         })
         it("can use any error", function(){
-            var description = {union:[{string:opts},{object:{x:{number:opts}}}]}
+            var description = {union:[{string:opts},{object:{x:{number:opts}}, optionals:{}}]}
             var viewed:string[] = ["x"];
             function anyError(errors:string[]){
                 viewed = errors;

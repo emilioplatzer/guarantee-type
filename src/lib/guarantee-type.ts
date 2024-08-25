@@ -13,7 +13,7 @@ export type Description =
     { recordString : Description } |
     { nullable: Description } |
     { optional: Description } |
-    { object: {[K in keyof any]: Description}, optionals:Partial<{[K in keyof any]: Description}> } | 
+    { object: {[K in keyof any]: Description}, optionals:{[K in keyof any]: Description} } | 
     { array: Description } | 
     { union: Description [] } | 
     { class: Function } | 
@@ -30,7 +30,6 @@ export type DefinedType<Description> =
     Description extends { nullable: infer T } ? DefinedType<T>|null :
     Description extends { optional: infer T } ? DefinedType<T>|undefined :
     Description extends { object: infer T, optionals: infer T2} ? {[K in keyof T] : DefinedType<T[K]>} & Partial<{[K in keyof T2] : DefinedType<T2[K]>}>:
-    Description extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
     Description extends { array: infer T} ? DefinedType<T>[] :
     Description extends { recordString : infer T } ? Record<string, DefinedType<T>> :
     Description extends { union: (infer T1) [] } ? DefinedType<T1> :
@@ -214,28 +213,29 @@ type IS2 = IS1 & {
     object   : <T extends {}, T2 extends {}>(descriptions:T, optionals?:T2|null|undefined)=>( {object:T, optionals:T2} )
 }
 
+
 type IS = IS2 & {
     recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
         nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
         optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
     } & {
-        object:<T, T2>(descriptions:T, optionals:T2)=>( {recordString:{object:T, optionals:T2}} )
+        object:<T extends {}, T2 extends {}>(descriptions:T, optionals?:T2|null|undefined)=>( {recordString:{object:T, optionals:T2}} )
     },
     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
         array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
     } & {
-        object:<T>(descriptions:T)=>( {nullable:{object:T}} )
+        object:<T extends {}, T2 extends {}>(descriptions:T, optionals?:T2|null|undefined)=>( {nullable:{object:T, optionals:T2}} )
     },
     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
         array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
     } & {
-        object:<T>(descriptions:T)=>( {optional:{object:T}} )
+        object:<T extends {}, T2 extends {}>(descriptions:T, optionals?:T2|null|undefined)=>( {optional:{object:T, optionals:T2}} )
     },
     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
     } & {
-        object:<T>(descriptions:T)=>( {array:{object:T}} )
+        object:<T extends {}, T2 extends {}>(descriptions:T, optionals?:T2|null|undefined)=>( {array:{object:T, optionals:T2}} )
     },
     union: <T>(description:T[]) => ( {union: T[]}),
     literal: <T extends Literal>(description:T) => ( {literal: T} )
