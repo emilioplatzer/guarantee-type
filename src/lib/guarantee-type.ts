@@ -180,130 +180,131 @@ export function guarantee<CurrentD extends Description>(description:CurrentD, va
     return value;
 }
 
-export var nullOpts:Opts = {}
-/*
-type IS = {
-    string   : {string:Opts},
-    number   : {number:Opts},
-    boolean  : {boolean:Opts},
-    bigint   : {bigint:Opts},
-    symbol   : {symbol:Opts},
-    class    : (c: Constructor<any>)=>Description,
-    Date     : Description,
-    // object   : <T>(descriptions:{[K in keyof T]: T[K]})=>( {object:{[K in keyof T]: T[K]}})
-    object   : <T>(descriptions:T)=>( {object:T} )
-    nullable : {[k in keyof IS]: {nullable:Pick<IS,k>}},
-    optional : {[k in keyof IS]: {optional:Pick<IS,k>}},
-    array    : {[k in keyof IS]: {array   :Pick<IS,k>}},
-    // union    : Description
-}
-*/
-
-type IS1 = {
-    string   : {string:Opts},
-    number   : {number:Opts},
-    boolean  : {boolean:Opts},
-    bigint   : {bigint:Opts},
-    symbol   : {symbol:Opts},
-    class    : (c: Constructor<any>)=>Description,
-    Date     : {class: Constructor<Date>}
-}
-
-type IS2 = IS1 & {
-    object   : <T>(descriptions:T)=>( {object:T} )
-}
-
-type IS = IS2 & {
-    recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
-        nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
-        optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {recordString:{object:T}} )
-    },
-    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
-        array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {nullable:{object:T}} )
-    },
-    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
-        array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {optional:{object:T}} )
-    },
-    array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
-        nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
-        optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {array:{object:T}} )
-    },
-    union: <T>(description:T[]) => ( {union: T[]}),
-    literal: <T extends Literal>(description:T) => ( {literal: T} )
-}
-
-/*
-type IS2 = IS1 & {
-    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}},
-    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}},
-    array    : {[k in keyof IS1]: {array   :Pick<IS1,k>}},
-}
-
-type I3={
-    optional : {optional:IS},
-    object   : <T>(o:{[K in keyof T]: T[K]})=>{ object: {[K in keyof T]: T[K]} },
-    array    : {array:IS},
-    union    : Description,
-    
-}
-*/
-
-export var is:IS = {
-    string   : {string  : {}},
-    number   : {number  : {}},
-    boolean  : {boolean : {}},
-    bigint   : {bigint  : {}},
-    symbol   : {symbol  : {}},
-    // @ts-ignore TODO!!!!
-    get recordString(){ return isModificator(['recordString'])},
-    // @ts-ignore TODO!!!!
-    get nullable(){ return isModificator(['nullable'])},
-    // @ts-ignore TODO!!!!
-    get optional(){ return isModificator(['optional'])},
-    object   : <T>(descriptions:T)=>( {object:descriptions}),
-    // @ts-ignore TODO!!!!
-    get array(){ return isModificator(['array'])},
-    union    : <T>(description:T[]) => ( {union: description} ),
-    literal  : <T extends Literal>(description:T) => ( {literal: description} ),
-    class    : (c:Constructor<any>) => ({class: c}),
-    Date     : {class: Date}
-}
-
-const IS_PROXIED = Symbol('IS_PROXIED')
-
-function isModificator(name:(keyof IS)[]): IS {
-    var proxy = new Proxy(is, {
-        get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
-            if(prop==IS_PROXIED){
-                return true;
-            }else{
-                var value = is[prop];
-                // @ts-expect-error IS_PROXIED is an internal flag for chain propierties
-                if(value[IS_PROXIED]){
-                    return isModificator([...name, prop]);
-                }else{
-                    var wrap = (value:any) => {
-                        for(var i=name.length-1; i>=0; i--){
-                            value = {[name[i]]: value} as Description;
-                        }
-                        return value;
-                    }
-                    if (prop == 'object') {
-                        return (x:any) => wrap({object: x})
-                    } else {
-                        return wrap(value)
-                    }
-                }
-            }
-        }        
-    });
-    return proxy;
-}
+// export var nullOpts:Opts = {}
+// /*
+// type IS = {
+//     string   : {string:Opts},
+//     number   : {number:Opts},
+//     boolean  : {boolean:Opts},
+//     bigint   : {bigint:Opts},
+//     symbol   : {symbol:Opts},
+//     class    : (c: Constructor<any>)=>Description,
+//     Date     : Description,
+//     // object   : <T>(descriptions:{[K in keyof T]: T[K]})=>( {object:{[K in keyof T]: T[K]}})
+//     object   : <T>(descriptions:T)=>( {object:T} )
+//     nullable : {[k in keyof IS]: {nullable:Pick<IS,k>}},
+//     optional : {[k in keyof IS]: {optional:Pick<IS,k>}},
+//     array    : {[k in keyof IS]: {array   :Pick<IS,k>}},
+//     // union    : Description
+// }
+// */
+// 
+// type IS1 = {
+//     string   : {string:Opts},
+//     number   : {number:Opts},
+//     boolean  : {boolean:Opts},
+//     bigint   : {bigint:Opts},
+//     symbol   : {symbol:Opts},
+//     class    : (c: Constructor<any>)=>Description,
+//     Date     : {class: Constructor<Date>}
+// }
+// 
+// type IS2 = IS1 & {
+//     object   : <T>(descriptions:T)=>( {object:T} )
+// }
+// 
+// type IS = IS2 & {
+//     recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
+//         nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
+//         optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
+//     } & {
+//         object:<T>(descriptions:T)=>( {recordString:{object:T}} )
+//     },
+//     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
+//         array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
+//     } & {
+//         object:<T>(descriptions:T)=>( {nullable:{object:T}} )
+//     },
+//     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
+//         array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
+//     } & {
+//         object:<T>(descriptions:T)=>( {optional:{object:T}} )
+//     },
+//     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
+//         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
+//         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
+//     } & {
+//         object:<T>(descriptions:T)=>( {array:{object:T}} )
+//     },
+//     union: <T>(description:T[]) => ( {union: T[]}),
+//     literal: <T extends Literal>(description:T) => ( {literal: T} )
+// }
+// 
+// /*
+// type IS2 = IS1 & {
+//     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}},
+//     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}},
+//     array    : {[k in keyof IS1]: {array   :Pick<IS1,k>}},
+// }
+// 
+// type I3={
+//     optional : {optional:IS},
+//     object   : <T>(o:{[K in keyof T]: T[K]})=>{ object: {[K in keyof T]: T[K]} },
+//     array    : {array:IS},
+//     union    : Description,
+//     
+// }
+// */
+// 
+// export var is:IS = {
+//     string   : {string  : {}},
+//     number   : {number  : {}},
+//     boolean  : {boolean : {}},
+//     bigint   : {bigint  : {}},
+//     symbol   : {symbol  : {}},
+//     // @ts-ignore TODO!!!!
+//     get recordString(){ return isModificator(['recordString'])},
+//     // @ts-ignore TODO!!!!
+//     get nullable(){ return isModificator(['nullable'])},
+//     // @ts-ignore TODO!!!!
+//     get optional(){ return isModificator(['optional'])},
+//     object   : <T>(descriptions:T)=>( {object:descriptions}),
+//     // @ts-ignore TODO!!!!
+//     get array(){ return isModificator(['array'])},
+//     union    : <T>(description:T[]) => ( {union: description} ),
+//     literal  : <T extends Literal>(description:T) => ( {literal: description} ),
+//     class    : (c:Constructor<any>) => ({class: c}),
+//     Date     : {class: Date}
+// }
+// 
+// const IS_PROXIED = Symbol('IS_PROXIED')
+// 
+// function isModificator(name:(keyof IS)[]): IS {
+//     var proxy = new Proxy(is, {
+//         get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
+//             if(prop==IS_PROXIED){
+//                 return true;
+//             }else{
+//                 var value = is[prop];
+//                 // @ts-expect-error IS_PROXIED is an internal flag for chain propierties
+//                 if(value[IS_PROXIED]){
+//                     return isModificator([...name, prop]);
+//                 }else{
+//                     var wrap = (value:any) => {
+//                         for(var i=name.length-1; i>=0; i--){
+//                             value = {[name[i]]: value} as Description;
+//                         }
+//                         return value;
+//                     }
+//                     if (prop == 'object') {
+//                         return (x:any) => wrap({object: x})
+//                     } else {
+//                         return wrap(value)
+//                     }
+//                 }
+//             }
+//         }        
+//     });
+//     return proxy;
+// }
+// 
