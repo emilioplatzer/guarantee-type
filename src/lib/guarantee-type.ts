@@ -4,22 +4,38 @@ export type Keys = Values | 'recordString' | 'nullable' | 'optional' | 'object' 
 
 export type Opts = {};
 
-export type Description = 
+export type SimpleDescription = 
     { string : Opts } |
     { number : Opts } |
     { boolean: Opts } |
     { bigint : Opts } |
     { symbol : Opts } |
+    { literal: Literal } |
+    { object: {[K in keyof any]: Description} } |
+    { array: Description } |
+    { class: Function } 
+
+export type Description = 
     { recordString : Description } |
     { nullable: Description } |
     { optional: Description } |
-    { array: Description } | 
     { union: Description [] } | 
-    { class: Function } | 
-    { literal: Literal } |
-    { object: {[K in keyof any]: Description} } 
+    SimpleDescription
 
 export type Constructor<T> = new(...args: any[]) => T;
+
+export type SimpleDefinedType<SimpleDescription> =
+    SimpleDescription extends { string : Opts } ? string  :
+    SimpleDescription extends { number : Opts } ? number  :
+    SimpleDescription extends { boolean: Opts } ? boolean :
+    SimpleDescription extends { bigint : Opts } ? bigint  :
+    SimpleDescription extends { symbol : Opts } ? symbol  :
+    SimpleDescription extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
+    SimpleDescription extends { array: infer T} ? DefinedType<T>[] :
+    SimpleDescription extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
+    SimpleDescription extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
+    never
+
 
 export type DefinedType<Description> = 
     Description extends { string : Opts } ? string  :

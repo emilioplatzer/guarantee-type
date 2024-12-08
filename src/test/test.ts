@@ -38,12 +38,13 @@ describe("guarantee",function(){
             var result:boolean|null|undefined = guarantee({optional:{boolean:opts}}, value);
             assert.strictEqual(result, value)
         })
-        it("detects TypeError can set a optional variable", function(){
+        it("althoug detecting TypeError, it can set an optional variable", function(){
             var value:any = true;
+            var result = guarantee({optional:{boolean:opts}}, value);
             // @ts-expect-error Ok: Type 'boolean | null | undefined' is not assignable to type 'boolean | null'.
-            var result:boolean|null = guarantee({optional:{boolean:opts}}, value);
+            var typedResult:boolean|null = result;
             // This is JS, guarantee don't throws if the result variable is of different type
-            assert.strictEqual(result, true);
+            assert.strictEqual(typedResult, true);
         })
         it("can set a nullable variable", function(){
             var value:any = null;
