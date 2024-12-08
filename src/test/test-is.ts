@@ -24,6 +24,9 @@ describe("internal representation of is", function(){
     it("Date", function(){
         assert.deepEqual(is.Date, {class:Date})
     })
+    it("nullable Date", function(){
+        assert.deepEqual(is.nullable.Date, {nullable:{class:Date}})
+    })
     it("object", function(){
         assert.deepEqual(is.object({
             name:is.string,

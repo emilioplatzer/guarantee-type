@@ -2,7 +2,6 @@ import { jsonParse, /*is,*/ nullOpts, DefinedType} from "../lib/guarantee-type";
 
 import * as assert from "assert";
 
-
 describe("helpers", function(){
     describe("jsonParse", function(){
         it("simple plain object", function(){

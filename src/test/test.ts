@@ -260,4 +260,12 @@ describe("guarantee",function(){
             assert.notDeepEqual(value, result);
         })
     })
+    describe("optional assignations", function(){
+        var description = {object: {name:{string: opts}, age:{optional:{number:opts}}}}
+        type ExpectedType = {name: string, age?:number}
+        var value = {name:'me'}
+        var obtained = guarantee(description, value);
+        var obtainedValue:ExpectedType = obtained;
+        assert.deepEqual(obtainedValue, value);
+    })
 })

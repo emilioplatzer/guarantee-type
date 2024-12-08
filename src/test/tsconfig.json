@@ -10,5 +10,6 @@
         "strictNullChecks": true,
         "strictPropertyInitialization": true,
         "noUnusedLocals": false,
+        // "exactOptionalPropertyTypes": false
     }
 }

@@ -21,21 +21,24 @@ export type Description =
 
 export type Constructor<T> = new(...args: any[]) => T;
 
-export type DefinedType<Description> = 
-    Description extends { string : Opts } ? string  :
-    Description extends { number : Opts } ? number  :
-    Description extends { boolean: Opts } ? boolean :
-    Description extends { bigint : Opts } ? bigint  :
-    Description extends { symbol : Opts } ? symbol  :
-//     Description extends { nullable: infer T } ? DefinedType<T>|null :
-//     Description extends { optional: infer T } ? DefinedType<T>|null|undefined :
-    Description extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
-    Description extends { array: infer T} ? DefinedType<T>[] :
-//     Description extends { recordString : infer T } ? Record<string, DefinedType<T>> :
-//     Description extends { union: (infer T1) [] } ? DefinedType<T1> :
-    Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
-    Description extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
-    never
+export type SimpleDefinedType<TDescription extends Description> = 
+    TDescription extends { string : Opts } ? string  :
+    TDescription extends { number : Opts } ? number  :
+    TDescription extends { boolean: Opts } ? boolean :
+    TDescription extends { bigint : Opts } ? bigint  :
+    TDescription extends { symbol : Opts } ? symbol  :
+    TDescription extends { object: infer T} ? {[K in keyof T] : ( T[K] extends Description ? DefinedType<T[K]> : unknown)} :
+    TDescription extends { array: infer T} ? ( T extends Description ? DefinedType<T>[] : unknown ):
+    TDescription extends { nullable: infer T } ? ( T extends { nullable: infer _ } ? unknown : T extends Description ? SimpleDefinedType<T>|null : unknown) :
+    TDescription extends { optional: infer T } ? ( T extends { optional: infer _ } ? unknown : T extends { nullable: infer _ } ? unknown : T extends Description ? SimpleDefinedType<T>|undefined : unknown) :
+    TDescription extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
+    TDescription extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
+    unknown
+
+export type DefinedType<TDescription extends Description> = 
+    TDescription extends { recordString : infer T } ? ( T extends Description ? Record<string, SimpleDefinedType<T>> : unknown) :
+    TDescription extends { union: (infer T) [] } ? ( T extends Description ? SimpleDefinedType<T> : unknown) :
+    SimpleDefinedType<TDescription>
 
 export function valueGuarantor(type:Values){
     return function guarantor(_opts:Opts, value:any, path:string, errors:string[]){
@@ -97,16 +100,15 @@ export var errorTypeFinder = {
 } satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>>
 
 function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{
-//     if ( "nullable" in description ){
-//         if ( value === null ) return value
-//         else
-//             return findErrorsInTypes(description.nullable, value, path, errors);
-//     }else if ( "optional" in description){
-//         if ( value == null ) return value
-//         else
-//             return findErrorsInTypes(description.optional, value, path, errors);
-//     }else
-    {
+    if ( "nullable" in description ){
+        if ( value === null ) return value
+        else
+            return findErrorsInTypes(description.nullable, value, path, errors);
+    }else if ( "optional" in description){
+        if ( value == null ) return value
+        else
+            return findErrorsInTypes(description.optional, value, path, errors);
+    }else{
         if ( value == null ) errors.push(`${path} is ${value} but type is not nullable`)
         else 
         for(var firstTag in description){
@@ -199,115 +201,117 @@ type IS = {
     // union    : Description
 }
 */
-// 
-// type IS1 = {
-//     string   : {string:Opts},
-//     number   : {number:Opts},
-//     boolean  : {boolean:Opts},
-//     bigint   : {bigint:Opts},
-//     symbol   : {symbol:Opts},
-//     class    : (c: Constructor<any>)=>Description,
-//     Date     : {class: Constructor<Date>}
-// }
-// 
-// type IS2 = IS1 & {
-//     object   : <T>(descriptions:T)=>( {object:T} )
-// }
-// 
-// type IS = IS2 & {
-//     recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
-//         nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
-//         optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
-//     } & {
-//         object:<T>(descriptions:T)=>( {recordString:{object:T}} )
-//     },
-//     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
-//         array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
-//     } & {
-//         object:<T>(descriptions:T)=>( {nullable:{object:T}} )
-//     },
-//     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
-//         array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
-//     } & {
-//         object:<T>(descriptions:T)=>( {optional:{object:T}} )
-//     },
-//     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
-//         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
-//         optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
-//     } & {
-//         object:<T>(descriptions:T)=>( {array:{object:T}} )
-//     },
-//     union: <T>(description:T[]) => ( {union: T[]}),
-//     literal: <T extends Literal>(description:T) => ( {literal: T} )
-// }
-// 
-// /*
-// type IS2 = IS1 & {
-//     nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}},
-//     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}},
-//     array    : {[k in keyof IS1]: {array   :Pick<IS1,k>}},
-// }
-// 
-// type I3={
-//     optional : {optional:IS},
-//     object   : <T>(o:{[K in keyof T]: T[K]})=>{ object: {[K in keyof T]: T[K]} },
-//     array    : {array:IS},
-//     union    : Description,
-//     
-// }
-// */
-// 
-// export var is:IS = {
-//     string   : {string  : {}},
-//     number   : {number  : {}},
-//     boolean  : {boolean : {}},
-//     bigint   : {bigint  : {}},
-//     symbol   : {symbol  : {}},
-//     // @ts-ignore TODO!!!!
-//     get recordString(){ return isModificator(['recordString'])},
-//     // @ts-ignore TODO!!!!
-//     get nullable(){ return isModificator(['nullable'])},
-//     // @ts-ignore TODO!!!!
-//     get optional(){ return isModificator(['optional'])},
-//     object   : <T>(descriptions:T)=>( {object:descriptions}),
-//     // @ts-ignore TODO!!!!
-//     get array(){ return isModificator(['array'])},
-//     union    : <T>(description:T[]) => ( {union: description} ),
-//     literal  : <T extends Literal>(description:T) => ( {literal: description} ),
-//     class    : (c:Constructor<any>) => ({class: c}),
-//     Date     : {class: Date}
-// }
-// 
-// const IS_PROXIED = Symbol('IS_PROXIED')
-// 
-// function isModificator(name:(keyof IS)[]): IS {
-//     var proxy = new Proxy(is, {
-//         get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
-//             if(prop==IS_PROXIED){
-//                 return true;
-//             }else{
-//                 var value = is[prop];
-//                 // @ts-expect-error IS_PROXIED is an internal flag for chain propierties
-//                 if(value[IS_PROXIED]){
-//                     return isModificator([...name, prop]);
-//                 }else{
-//                     var wrap = (value:any) => {
-//                         for(var i=name.length-1; i>=0; i--){
-//                             value = {[name[i]]: value} as Description;
-//                         }
-//                         return value;
-//                     }
-//                     if (prop == 'object') {
-//                         return (x:any) => wrap({object: x})
-//                     } else {
-//                         return wrap(value)
-//                     }
-//                 }
-//             }
-//         }        
-//     });
-//     return proxy;
-// }
+
+type IS1 = {
+    string   : {string:Opts},
+    number   : {number:Opts},
+    boolean  : {boolean:Opts},
+    bigint   : {bigint:Opts},
+    symbol   : {symbol:Opts},
+    class    : (c: Constructor<any>)=>Description,
+    Date     : {class: Constructor<Date>}
+}
+
+type IS2 = IS1 & {
+    object   : <T>(descriptions:T)=>( {object:T} )
+}
+
+type IS = IS2 & {
+    recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
+        nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
+        optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {recordString:{object:T}} )
+    },
+    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
+        array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {nullable:{object:T}} )
+    } & {
+        Date: {nullable:{class: Date}} 
+    },
+    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
+        array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {optional:{object:T}} )
+    },
+    array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
+        nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
+        optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
+    } & {
+        object:<T>(descriptions:T)=>( {array:{object:T}} )
+    },
+    union: <T>(description:T[]) => ( {union: T[]}),
+    literal: <T extends Literal>(description:T) => ( {literal: T} )
+}
+
+/*
+type IS2 = IS1 & {
+    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}},
+    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}},
+    array    : {[k in keyof IS1]: {array   :Pick<IS1,k>}},
+}
+
+type I3={
+    optional : {optional:IS},
+    object   : <T>(o:{[K in keyof T]: T[K]})=>{ object: {[K in keyof T]: T[K]} },
+    array    : {array:IS},
+    union    : Description,
+    
+}
+*/
+
+export var is:IS = {
+    string   : {string  : {}},
+    number   : {number  : {}},
+    boolean  : {boolean : {}},
+    bigint   : {bigint  : {}},
+    symbol   : {symbol  : {}},
+    // @ts-ignore TODO!!!!
+    get recordString(){ return isModificator(['recordString'])},
+    // @ts-ignore TODO!!!!
+    get nullable(){ return isModificator(['nullable'])},
+    // @ts-ignore TODO!!!!
+    get optional(){ return isModificator(['optional'])},
+    object   : <T>(descriptions:T)=>( {object:descriptions}),
+    // @ts-ignore TODO!!!!
+    get array(){ return isModificator(['array'])},
+    union    : <T>(description:T[]) => ( {union: description} ),
+    literal  : <T extends Literal>(description:T) => ( {literal: description} ),
+    class    : (c:Constructor<any>) => ({class: c}),
+    Date     : {class: Date}
+}
+
+const IS_PROXIED = Symbol('IS_PROXIED')
+
+function isModificator(name:(keyof IS)[]): IS {
+    var proxy = new Proxy(is, {
+        get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
+            if(prop==IS_PROXIED){
+                return true;
+            }else{
+                var value = is[prop];
+                // @ts-expect-error IS_PROXIED is an internal flag for chain propierties
+                if(value[IS_PROXIED]){
+                    return isModificator([...name, prop]);
+                }else{
+                    var wrap = (value:any) => {
+                        for(var i=name.length-1; i>=0; i--){
+                            value = {[name[i]]: value} as Description;
+                        }
+                        return value;
+                    }
+                    if (prop == 'object') {
+                        return (x:any) => wrap({object: x})
+                    } else {
+                        return wrap(value)
+                    }
+                }
+            }
+        }        
+    });
+    return proxy;
+}
 
 export function jsonParse<T extends Description>(description:T, jsonString:string): DefinedType<T>{
     var parsedObject = JSON.parse(jsonString);
