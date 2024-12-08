@@ -8,24 +8,28 @@ var opts:Opts;
 
 class ExampleForTest{}
 
+function compareInternalRepresentation<T extends Description>(a:T, b:T){
+    assert.deepEqual(a, b)
+}
+
 describe("internal representation of is", function(){
     it("boolean", function(){
-        assert.deepEqual(is.boolean, {boolean: nullOpts})
+        compareInternalRepresentation(is.boolean, {boolean: nullOpts})
     })
     it("nullable", function(){
-        assert.deepEqual(is.nullable.string, {nullable:{string: nullOpts}})
+        compareInternalRepresentation(is.nullable.string, {nullable:{string: nullOpts}})
     })
     it("optional", function(){
-        assert.deepEqual(is.optional.number, {optional:{number: nullOpts}})
+        compareInternalRepresentation(is.optional.number, {optional:{number: nullOpts}})
     })
     it("class", function(){
-        assert.deepEqual(is.class(ExampleForTest), {class:ExampleForTest})
+        compareInternalRepresentation(is.class(ExampleForTest), {class:ExampleForTest})
     })
     it("Date", function(){
-        assert.deepEqual(is.Date, {class:Date})
+        compareInternalRepresentation(is.Date, {class:Date})
     })
     it("nullable Date", function(){
-        assert.deepEqual(is.nullable.Date, {nullable:{class:Date}})
+        compareInternalRepresentation(is.nullable.Date, {nullable:{class: Date}})
     })
     it("object", function(){
         assert.deepEqual(is.object({

@@ -209,11 +209,11 @@ type IS1 = {
     bigint   : {bigint:Opts},
     symbol   : {symbol:Opts},
     class    : (c: Constructor<any>)=>Description,
-    Date     : {class: Constructor<Date>}
 }
 
 type IS2 = IS1 & {
     object   : <T>(descriptions:T)=>( {object:T} )
+    Date     : {class: Constructor<Date>}
 }
 
 type IS = IS2 & {
@@ -228,7 +228,7 @@ type IS = IS2 & {
     } & {
         object:<T>(descriptions:T)=>( {nullable:{object:T}} )
     } & {
-        Date: {nullable:{class: Date}} 
+        Date: {nullable:{class: Constructor<Date>}} 
     },
     optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
         array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
