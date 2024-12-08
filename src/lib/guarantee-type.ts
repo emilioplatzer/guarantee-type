@@ -13,11 +13,11 @@ export type Description =
     { recordString : Description } |
     { nullable: Description } |
     { optional: Description } |
-    { object: {[K in keyof any]: Description} } | 
     { array: Description } | 
     { union: Description [] } | 
     { class: Function } | 
-    { literal: Literal }
+    { literal: Literal } |
+    { object: {[K in keyof any]: Description} } 
 
 export type Constructor<T> = new(...args: any[]) => T;
 
@@ -27,15 +27,15 @@ export type DefinedType<Description> =
     Description extends { boolean: Opts } ? boolean :
     Description extends { bigint : Opts } ? bigint  :
     Description extends { symbol : Opts } ? symbol  :
-    Description extends { nullable: infer T } ? DefinedType<T>|null :
-    Description extends { optional: infer T } ? DefinedType<T>|null|undefined :
+//     Description extends { nullable: infer T } ? DefinedType<T>|null :
+//     Description extends { optional: infer T } ? DefinedType<T>|null|undefined :
     Description extends { object: infer T} ? {[K in keyof T] : DefinedType<T[K]>} :
     Description extends { array: infer T} ? DefinedType<T>[] :
-    Description extends { recordString : infer T } ? Record<string, DefinedType<T>> :
-    Description extends { union: (infer T1) [] } ? DefinedType<T1> :
+//     Description extends { recordString : infer T } ? Record<string, DefinedType<T>> :
+//     Description extends { union: (infer T1) [] } ? DefinedType<T1> :
     Description extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     Description extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
-    unknown
+    never
 
 export function valueGuarantor(type:Values){
     return function guarantor(_opts:Opts, value:any, path:string, errors:string[]){
@@ -97,15 +97,16 @@ export var errorTypeFinder = {
 } satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>>
 
 function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{
-    if ( "nullable" in description ){
-        if ( value === null ) return value
-        else
-            return findErrorsInTypes(description.nullable, value, path, errors);
-    }else if ( "optional" in description){
-        if ( value == null ) return value
-        else
-            return findErrorsInTypes(description.optional, value, path, errors);
-    }else{
+//     if ( "nullable" in description ){
+//         if ( value === null ) return value
+//         else
+//             return findErrorsInTypes(description.nullable, value, path, errors);
+//     }else if ( "optional" in description){
+//         if ( value == null ) return value
+//         else
+//             return findErrorsInTypes(description.optional, value, path, errors);
+//     }else
+    {
         if ( value == null ) errors.push(`${path} is ${value} but type is not nullable`)
         else 
         for(var firstTag in description){
@@ -173,31 +174,31 @@ export function guaranteeOnError(fun:(errors:string[]) => void){
     guaranteeOnErrorListener = fun;
 }
 
-export function guarantee<CurrentD extends Description>(description:CurrentD, value:any):DefinedType<CurrentD>{
+export function guarantee<CurrentD extends Description>(description:CurrentD, value:NoInfer<any>):DefinedType<CurrentD>{
     var errors:string[] = []
     findErrorsInTypes(description, value, 'Value', errors);
     guaranteeOnErrorListener(errors);
     return value;
 }
 
-// export var nullOpts:Opts = {}
-// /*
-// type IS = {
-//     string   : {string:Opts},
-//     number   : {number:Opts},
-//     boolean  : {boolean:Opts},
-//     bigint   : {bigint:Opts},
-//     symbol   : {symbol:Opts},
-//     class    : (c: Constructor<any>)=>Description,
-//     Date     : Description,
-//     // object   : <T>(descriptions:{[K in keyof T]: T[K]})=>( {object:{[K in keyof T]: T[K]}})
-//     object   : <T>(descriptions:T)=>( {object:T} )
-//     nullable : {[k in keyof IS]: {nullable:Pick<IS,k>}},
-//     optional : {[k in keyof IS]: {optional:Pick<IS,k>}},
-//     array    : {[k in keyof IS]: {array   :Pick<IS,k>}},
-//     // union    : Description
-// }
-// */
+export var nullOpts:Opts = {}
+/*
+type IS = {
+    string   : {string:Opts},
+    number   : {number:Opts},
+    boolean  : {boolean:Opts},
+    bigint   : {bigint:Opts},
+    symbol   : {symbol:Opts},
+    class    : (c: Constructor<any>)=>Description,
+    Date     : Description,
+    // object   : <T>(descriptions:{[K in keyof T]: T[K]})=>( {object:{[K in keyof T]: T[K]}})
+    object   : <T>(descriptions:T)=>( {object:T} )
+    nullable : {[k in keyof IS]: {nullable:Pick<IS,k>}},
+    optional : {[k in keyof IS]: {optional:Pick<IS,k>}},
+    array    : {[k in keyof IS]: {array   :Pick<IS,k>}},
+    // union    : Description
+}
+*/
 // 
 // type IS1 = {
 //     string   : {string:Opts},
@@ -307,4 +308,9 @@ export function guarantee<CurrentD extends Description>(description:CurrentD, va
 //     });
 //     return proxy;
 // }
-// 
+
+export function jsonParse<T extends Description>(description:T, jsonString:string): DefinedType<T>{
+    var parsedObject = JSON.parse(jsonString);
+    var result: DefinedType<T> = guarantee(description, parsedObject);
+    return result;
+}

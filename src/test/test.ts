@@ -1,77 +1,12 @@
 import { Description, Opts, guarantee, guaranteeOnError, throwAllErrorsInAString, consoleErrorAllErrors, ignoreAllErrors,
-    is, nullOpts, DefinedType
+    DefinedType
 } from "../lib/guarantee-type";
 
 import * as assert from "assert";
-import { IpcSocketConnectOpts } from "net";
 
 var opts:Opts;
 
 class ExampleForTest{}
-
-describe("internal representation of is", function(){
-    it("boolean", function(){
-        assert.deepEqual(is.boolean, {boolean: nullOpts})
-    })
-    it("nullable", function(){
-        assert.deepEqual(is.nullable.string, {nullable:{string: nullOpts}})
-    })
-    it("optional", function(){
-        assert.deepEqual(is.optional.number, {optional:{number: nullOpts}})
-    })
-    it("class", function(){
-        assert.deepEqual(is.class(ExampleForTest), {class:ExampleForTest})
-    })
-    it("Date", function(){
-        assert.deepEqual(is.Date, {class:Date})
-    })
-    it("object", function(){
-        assert.deepEqual(is.object({
-            name:is.string,
-            age:is.optional.number,
-            born:is.Date
-        }), {object:{
-            name:{string: nullOpts},
-            age:{optional:{number: nullOpts}},
-            born:{class:Date}
-        }})
-    })
-    it("string[]", function(){
-        assert.deepEqual(is.array.string, {array:{string: nullOpts}});
-    })
-    it("(bigint|null)[]", function(){
-        assert.deepEqual(is.array.nullable.bigint, {array:{nullable:{bigint: nullOpts}}});
-        var x: DefinedType<typeof is.array.nullable.bigint> = [];
-        var y: (bigint|null)[] = [];
-        // @ts-expect-error x is not any
-        var n:null = x;
-        x=y;
-        y=x; 
-    })
-    it("string[]|null", function(){
-        assert.deepEqual(is.nullable.array.string, {nullable:{array:{string: nullOpts}}});
-        var x:DefinedType<typeof is.nullable.array.string>
-        var y: string[]|null = [];
-        // @ts-expect-error x is not any
-        var n:null = x;
-        x=y;
-        y=x; 
-    })
-    it("optional object", function(){
-        var description = is.optional.object({name:is.string});
-        assert.deepEqual(description, {optional:{object:{name: {string:nullOpts}}}})
-        var resultNull = guarantee(description, null)
-        assert.deepEqual(resultNull, null);
-        var resultOk = guarantee(description, {name:'the name'});
-        assert.deepEqual(resultOk, {name:'the name'});
-    })
-    it("{}[]", function(){
-        var description = is.array.object({name:is.string});
-        assert.deepEqual(description, {array:{object:{name: {string:nullOpts}}}})
-        var resultOk = guarantee(description, [{name:'the name'}, {name:'name'}]);
-        assert.deepEqual(resultOk, [{name:'the name'}, {name:'name'}]);
-    })
-})
 
 describe("guarantee",function(){
     describe("values",function(){
@@ -80,19 +15,15 @@ describe("guarantee",function(){
             var value:any = "any string";
             result = guarantee({string:opts}, value);
             assert.equal(result, value);
-            result = guarantee(is.string, value);
-            assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
             var resultN:number = 0; 
             var value:any = "any string";
-            // @ts-expect-error
+            // @ts-expect-error Ok: Type 'string' is not assignable to type 'number'.
             resultN = guarantee({string:opts}, value);
-            // @ts-expect-error
-            resultN = guarantee(is.string, value);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(resultN, "any string");
-            // @ts-expect-error
+            // @ts-expect-error Ok: Type 'number' is not assignable to type 'string'.
             var resultS:string = guarantee({number:opts}, 42);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(resultS, 42);
@@ -101,19 +32,15 @@ describe("guarantee",function(){
         it("number cannot be assigned to string", function(){
             var value:any = 43;
             assert.throws(()=>guarantee({string:opts}, value), /guarantee excpetion. Value is not "string"/);
-            assert.throws(()=>guarantee(is.string, undefined), /guarantee excpetion. Value is undefined but type is not nullable/);
         })
         it("can set a optional variable", function(){
             var value:any = null;
             var result:boolean|null|undefined = guarantee({optional:{boolean:opts}}, value);
             assert.strictEqual(result, value)
-            var optional = guarantee(is.optional.boolean, value);
-            optional = result;
-            assert.strictEqual(optional, value)
         })
         it("detects TypeError can set a optional variable", function(){
             var value:any = true;
-            // @ts-expect-error
+            // @ts-expect-error Ok: Type 'boolean | null | undefined' is not assignable to type 'boolean | null'.
             var result:boolean|null = guarantee({optional:{boolean:opts}}, value);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(result, true);
@@ -125,15 +52,16 @@ describe("guarantee",function(){
         })
         it("detects TypeError can set a nullable variable", function(){
             var value:any = true;
-            // @ts-expect-error
+            // @ts-expect-error Ok: Type 'boolean | null' is not assignable to type 'boolean'.
             var result:boolean = guarantee({nullable:{boolean:opts}}, value);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(result, true);
         })
         it("invalid type in description", function(){
             var value:any = 8.8;
-            var badDescription = {float8:opts} as unknown as Description // Bad description
+            var badDescription = {float8:opts};
             assert.throws(function(){
+                // @ts-expect-error Ok: Argument of type '{ float8: Opts; }' is not assignable to parameter of type 'Description'.
                 guarantee(badDescription, value)
             }, /float8 is not a valid type/);
         })
@@ -144,11 +72,6 @@ describe("guarantee",function(){
             age:  { number : opts },
             ready:{ boolean: opts },
         }}
-        var description1is = is.object({
-            name: is.string ,
-            age:  is.number ,
-            ready:is.boolean,
-        })
         type Type1 = {
             name: string
             age: number
@@ -165,10 +88,8 @@ describe("guarantee",function(){
         }
         it("detects TypeError", function(){
             var result: Type2
-            // @ts-expect-error
+            // @ts-expect-error Ok: Property 'born' is missing in type '{ name: string; age: number; ready: boolean; }' but required in type 'Type2'.
             result = guarantee(description1, value1);
-            // @ts-expect-error
-            result = guarantee(description1is, value1);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.deepStrictEqual(result, value1);
         })
@@ -176,10 +97,6 @@ describe("guarantee",function(){
             var result: Type1
             result = guarantee(description1, value1 );
             assert.equal(result, value1);
-            var result2 = guarantee(description1is, value1 );
-            assert.equal(result2, value1);
-            // @ts-expect-error Esto está puesto para evitar que result2 sea null y esto lo detectaría al permitir asignar cualquier cosa.
-            result2 = {name:1, age:1, ready:1}
         })
         it("rejects a bad object", function(){
             var value = {
@@ -214,13 +131,6 @@ describe("guarantee",function(){
         it("accept array", function(){
             var description = {array:{boolean:opts}};
             var result:boolean[] = guarantee(description, [true, false]);
-            var autoResult = guarantee(is.array.boolean, [true, false]); // to ensure not 'any'
-            // @ts-expect-error
-            var wrongResult:string[] = autoResult // if the previous return 'any' this don't detect the error
-            var autoResult2 = guarantee(is.array.optional.boolean, [true, false]); // to ensure not 'any'
-            var rightResult2:(boolean|undefined|null)[] = autoResult2
-            // @ts-expect-error
-            var wrongResult2:boolean[] = autoResult2 // if the previous return 'any' this don't detect the error
         })
         it("rejects non array", function(){
             var description = {array:{boolean:opts}};
@@ -243,13 +153,6 @@ describe("guarantee",function(){
         it("accept recordString", function(){
             var description = {recordString:{boolean:opts}};
             var result:Record<string, boolean> = guarantee(description, {yes:true, no:false});
-            var autoResult = guarantee(is.recordString.boolean, {yes:true, no:false}); // to ensure not 'any'
-            // @ts-expect-error
-            var wrongResult:Record<string, string> = autoResult // if the previous return 'any' this don't detect the error
-            var autoResult2 = guarantee(is.recordString.optional.boolean, {yes:true, no:false}); // to ensure not 'any'
-            var rightResult2:Record<string, (boolean|undefined|null)> = autoResult2
-            // @ts-expect-error
-            var wrongResult2:Record<string, boolean> = autoResult2 // if the previous return 'any' this don't detect the error
         })
         it("rejects non recordString", function(){
             var description = {recordString:{boolean:opts}};
@@ -281,12 +184,6 @@ describe("guarantee",function(){
             result = guarantee({union: [{string:opts},{number:opts}]}, any);
             assert.strictEqual(result, any);
         })
-        it("accepts any type with the last value", function(){
-            var result: string|number|{}|boolean;
-            var any:any = true;
-            result = guarantee(is.union([is.string,is.number,is.object({}),is.boolean]), any);
-            assert.strictEqual(result, any);
-        })
         it("reject wrong type", function(){
             var any:any = false;
             assert.throws(()=>guarantee({union: [{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
@@ -303,15 +200,9 @@ describe("guarantee",function(){
             var result: 43;
             var any:any = 43;
             assert.throws(()=>{
-                // @ts-expect-error 42 is not 43
+                // @ts-expect-error 42 is not 43 Ok: Type '42' is not assignable to type '43'.
                 result = guarantee({literal: 42 as 42}, any);
             })
-        })
-        it("accept literal in union", function(){
-            var result: "one"|"two";
-            var any:any = "one";
-            result = guarantee(is.union([is.literal("one" as "one"), is.literal("two" as "two")]), any);
-            assert.strictEqual(result, any);
         })
     })
     describe("configurable on error", function(){
@@ -350,13 +241,6 @@ describe("guarantee",function(){
             result = guarantee(description, value);
             assert.strictEqual(result, value)
         })
-        it("receives is.Date", function(){
-            var description = is.Date;
-            var result:Date;
-            var value = new Date(1969,5,6)
-            result = guarantee(description, value);
-            assert.strictEqual(result, value)
-        })
         it("rejects non Date", function(){
             var description = {class: Date};
             var result:Date;
@@ -370,30 +254,10 @@ describe("guarantee",function(){
             var result:{due:Date, pattern:RegExp, other:Date} = {due:new Date(), pattern:/not/, other:new Date()}
             var value = {due:new Date(), pattern:/mm-dd-yyyy/, other:new Date()};
             assert.throws(()=>{
-                // @ts-expect-error INVALID CLASS
+                // @ts-expect-error Ok: Type '{ due: Date; pattern: RegExp; other: RegExp; }' is not assignable to type '{ due: Date; pattern: RegExp; other: Date; }'.
                 result = guarantee(description, value);
             },/guarantee excpetion. Value.other is not "RegExp"/);
             assert.notDeepEqual(value, result);
-        })
-        it("works with dates in an object", function(){
-            var description = is.object({
-                name: is.string,
-                birthdate: is.Date,
-                age: is.number
-            });
-            var result: {name:string, birthdate: Date, age: number};
-            function nullObject<T extends Description>(description:T):DefinedType<T>{
-                // @ts-expect-error this is a naive implementation. 
-                var result: DefinedType<T> = {}
-                for (var key in description) {
-                    result[key] = null;
-                }
-                return result;
-            }
-            var obtained = nullObject(description);
-            // @ts-expect-error It expects that birthdate is not any
-            var no_number:number = obtained.birthdate;
-            result = obtained;
         })
     })
 })
