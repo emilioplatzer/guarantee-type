@@ -38,6 +38,7 @@ export type SimpleDefinedType<TDescription extends Description> =
 export type DefinedType<TDescription extends Description> = 
     TDescription extends { recordString : infer T } ? ( T extends Description ? Record<string, SimpleDefinedType<T>> : unknown) :
     TDescription extends { union: (infer T) [] } ? ( T extends Description ? SimpleDefinedType<T> : unknown) :
+    TDescription extends { optional: { recordString : infer T } } ? ( T extends Description ? Record<string, SimpleDefinedType<T>> | undefined : unknown) :
     SimpleDefinedType<TDescription>
 
 export function valueGuarantor(type:Values){
@@ -234,6 +235,8 @@ type IS = IS2 & {
         array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
     } & {
         object:<T>(descriptions:T)=>( {optional:{object:T}} )
+    } & {
+        recordString : {[k in keyof IS1]: {optional:{recordString:Pick<IS1,k>}}},
     },
     array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
         nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},

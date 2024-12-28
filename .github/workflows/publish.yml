@@ -1,0 +1,43 @@
+name: NPM publish
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]*'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.success.outputs.ok }}    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get package.json version
+        id: get_package_version
+        run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
+      - name: Check versions from tag and package.json
+        if: github.ref != format('refs/tags/v{0}', steps.get_package_version.outputs.version)
+        run: |
+          echo "Error: Versions does not match. Tag: (${{ github.ref }}),  package.json: (v${{ steps.get_package_version.outputs.version }})"
+          exit 1
+      - name: Set the result
+        if: github.ref == format('refs/tags/v{0}', steps.get_package_version.outputs.version)
+        id: success
+        run: |
+          echo "Good: Versions match. (${{ github.ref }})"
+          echo "ok=ok" >> "$GITHUB_OUTPUT"
+  publish:
+    runs-on: ubuntu-latest
+    needs: check
+    if: needs.check.outputs.status == 'ok'    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

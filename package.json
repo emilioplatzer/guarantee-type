@@ -10,9 +10,12 @@
     "main": "lib/guarantee-type.js",
     "types": "lib/guarantee-type.d.ts",
     "scripts": {
-        "prepare": "tsc -p src/lib",
+        "build": "tsc -p src/lib",
         "test": "tsc -p src/lib && tsc -p src/test && nyc mocha test-build-local/test/test*",
-        "test-wc": "mocha test-build-local/test/test"
+        "test-wc": "mocha test-build-local/test/test",
+        "preversion": "npm test",
+        "version": "npm run build",
+        "postversion": "git push && git push --tags"
     },
     "nyc": {
         "exclude": [

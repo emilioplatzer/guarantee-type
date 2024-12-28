@@ -13,7 +13,7 @@
                 "showReuseMessage": true,
                 "clear": false
             },
-            "args": ["run", "prepare"]
+            "args": ["run", "build"]
         }
     ]
 }

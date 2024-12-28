@@ -77,6 +77,14 @@ describe("internal representation of is", function(){
         var resultOk = guarantee(description, [{name:'the name'}, {name:'name'}]);
         assert.deepEqual(resultOk, [{name:'the name'}, {name:'name'}]);
     })
+    it("optional recordString", function(){
+        var description = is.optional.recordString.string;
+        assert.deepEqual(description, {optional:{recordString:{string:nullOpts}}})
+        var resultNull = guarantee(description, null)
+        assert.deepEqual(resultNull, null);
+        var resultOk = guarantee(description, {name:'the name'});
+        assert.deepEqual(resultOk, {name:'the name'});
+    })
 })
 
 describe("guarantee",function(){
