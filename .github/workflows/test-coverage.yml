@@ -1,4 +1,4 @@
-name: npm-test-coverage
+name: test-coverage
 
 on:
   push:
@@ -8,4 +8,4 @@ on:
 
 jobs:
   call-workflow:
-    uses: codenautas/.github/.github/workflows/node-test-coverage.yaml@v0
+    uses: codenautas/.github/.github/workflows/node-test-coverage.yaml@main

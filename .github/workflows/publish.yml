@@ -1,4 +1,4 @@
-name: npm-publish
+name: publish
 
 on:
   push:
@@ -7,4 +7,4 @@ on:
 
 jobs:
   call-workflow:
-    uses: codenautas/.github/.github/workflows/npm-publish.yaml@v0
+    uses: codenautas/.github/.github/workflows/npm-publish.yaml@main
