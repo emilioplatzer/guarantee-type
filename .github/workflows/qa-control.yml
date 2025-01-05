@@ -1,0 +1,11 @@
+name: qa-control
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  call-workflow:
+    uses: codenautas/.github/.github/workflows/node-test-coverage@v0
