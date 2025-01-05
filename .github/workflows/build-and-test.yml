@@ -8,4 +8,4 @@ on:
 
 jobs:
   call-workflow:
-    uses: codenautas/.github/.github/workflows/node-build-and-test.yaml@v0
+    uses: codenautas/.github/.github/workflows/node-build-and-test.yaml@main
