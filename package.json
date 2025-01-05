@@ -1,7 +1,7 @@
 {
     "name": "guarantee-type",
     "description": "guarantee the type of a plain object",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "repository": "emilioplatzer/guarantee-type",
     "files": [
         "lib",
