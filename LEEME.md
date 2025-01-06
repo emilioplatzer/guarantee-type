@@ -11,7 +11,7 @@ guarantee the type of a plain object
 <!-- cucardas -->
 ![extending](https://img.shields.io/badge/stability-extending-orange.svg)
 [![npm-version](https://img.shields.io/npm/v/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
-[![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/node.js.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/node.js.yml)
+[![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml)
 [![coverage](https://img.shields.io/coveralls/emilioplatzer/guarantee-type/master.svg)](https://coveralls.io/r/emilioplatzer/guarantee-type)
 [![outdated-deps](https://img.shields.io/github/issues-search/emilioplatzer/guarantee-type?color=9cf&label=outdated-deps&query=is%3Apr%20author%3Aapp%2Fdependabot%20is%3Aopen)](https://github.com/emilioplatzer/guarantee-type/pulls/app%2Fdependabot)
 
