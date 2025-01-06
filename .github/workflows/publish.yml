@@ -9,4 +9,4 @@ jobs:
   call-workflow:
     uses: codenautas/.github/.github/workflows/npm-publish.yaml@main
     secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN2 }}
