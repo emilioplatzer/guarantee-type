@@ -29,13 +29,16 @@ type OptionalKeys<T> = {
 
 type RequiredKeys<T> = Exclude<keyof T, OptionalKeys<T>>
 
-type ObjectDefinedType<T> = 
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never
+
+type ObjectDefinedType<T> = Expand<
     { [K in RequiredKeys<T>]: T[K] extends Description ? DefinedType<T[K]> : unknown }
     & 
     { [K in OptionalKeys<T>]?: T[K] extends { optional: infer Inner }
         ? Inner extends Description ? DefinedType<Inner> : unknown
         : unknown 
     }
+>
 
 // ─── tipo base: solo primitivos y class, sin recursión ────────────────────────
 
