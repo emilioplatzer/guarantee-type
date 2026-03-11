@@ -50,7 +50,7 @@ describe("guarantee",function(){
             var result:{name:string, age?:number} = guarantee({object:{name:{string:opts}, age:{optional:{number:opts}}}}, value);
             assert.strictEqual(result, value)
         })
-        it.skip("cannot set an invalid object with an optional attribute", function(){
+        it("cannot set an invalid object with an optional attribute", function(){
             var value:any = {name:'me', age:false};
             assert.throws(()=>{
                 // @ts-expect-error
