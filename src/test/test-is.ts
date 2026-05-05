@@ -25,6 +25,15 @@ describe("internal representation of is", function(){
     it("class", function(){
         compareInternalRepresentation(is.class(ExampleForTest), {class:ExampleForTest})
     })
+    it("class infers instance type", function(){
+        var description = is.class(ExampleForTest);
+        var x: DefinedType<typeof description>;
+        var y: ExampleForTest = new ExampleForTest();
+        // @ts-expect-error x is not any
+        var n: null = x;
+        x = y;
+        y = x;
+    })
     it("Date", function(){
         compareInternalRepresentation(is.Date, {class:Date})
     })

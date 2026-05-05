@@ -209,7 +209,7 @@ type IS1 = {
     boolean  : {boolean:Opts},
     bigint   : {bigint:Opts},
     symbol   : {symbol:Opts},
-    class    : (c: Constructor<any>)=>Description,
+    class    : <T>(c: Constructor<T>) => {class: Constructor<T>},
 }
 
 type IS2 = IS1 & {
@@ -281,7 +281,7 @@ export var is:IS = {
     get array(){ return isModificator(['array'])},
     union    : <T>(description:T[]) => ( {union: description} ),
     literal  : <T extends Literal>(description:T) => ( {literal: description} ),
-    class    : (c:Constructor<any>) => ({class: c}),
+    class    : <T>(c:Constructor<T>) => ({class: c}),
     Date     : {class: Date}
 }
 
