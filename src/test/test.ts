@@ -31,7 +31,7 @@ describe("guarantee",function(){
         })
         it("number cannot be assigned to string", function(){
             var value:any = 43;
-            assert.throws(()=>guarantee({string:opts}, value), /guarantee excpetion. Value is not "string"/);
+            assert.throws(()=>guarantee({string:opts}, value), /guarantee exception. Value is not "string"/);
         })
         it("can set a optional variable", function(){
             var value:any = null;
@@ -44,6 +44,18 @@ describe("guarantee",function(){
             var result:boolean|null = guarantee({optional:{boolean:opts}}, value);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(result, true);
+        })
+        it("can set an object with an optional attribute", function(){
+            var value:any = {name:'me'};
+            var result:{name:string, age?:number} = guarantee({object:{name:{string:opts}, age:{optional:{number:opts}}}}, value);
+            assert.strictEqual(result, value)
+        })
+        it("cannot set an invalid object with an optional attribute", function(){
+            var value:any = {name:'me', age:false};
+            assert.throws(()=>{
+                // @ts-expect-error
+                var result:{name:string, age?:number} = guarantee({object:{name:{string:opts}, age:{optional:{boolean:opts}}}}, value);
+            },/exception/);
         })
         it("can set a nullable variable", function(){
             var value:any = null;
@@ -104,7 +116,7 @@ describe("guarantee",function(){
                 age: "43",
                 ready: "yes"
             }
-            assert.throws(()=>guarantee(description1, value ), /guarantee excpetion. Value\.age is not "number".* Value\.ready is not "boolean"/);
+            assert.throws(()=>guarantee(description1, value ), /guarantee exception. Value\.age is not "number".* Value\.ready is not "boolean"/);
         })
         it("rejects a bad object", function(){
             var value = {
@@ -112,13 +124,13 @@ describe("guarantee",function(){
                 age: null,
                 ready: null
             }
-            assert.throws(()=>guarantee(description1, value ), /guarantee excpetion. Value\.age is null but type is not nullable/);
+            assert.throws(()=>guarantee(description1, value ), /guarantee exception. Value\.age is null but type is not nullable/);
         })
     })
     describe("object with more than one level", function(){
         it("rejects deeply", function(){
             var description = {object:{alpha:{object:{betha:{string:opts}}}}}
-            assert.throws(()=>guarantee(description, {alpha:{betha:false}} ), /guarantee excpetion. Value\.alpha\.betha is not "string"/);
+            assert.throws(()=>guarantee(description, {alpha:{betha:false}} ), /guarantee exception. Value\.alpha\.betha is not "string"/);
         })
         it("accepts complex object", function(){
             var description = {object:{alpha:{object:{betha:{string:opts},gamma:{number:opts}}}}}
@@ -134,19 +146,19 @@ describe("guarantee",function(){
         })
         it("rejects non array", function(){
             var description = {array:{boolean:opts}};
-            assert.throws(()=>guarantee(description, true), /guarantee excpetion. Value is not an array and must be/);
+            assert.throws(()=>guarantee(description, true), /guarantee exception. Value is not an array and must be/);
         })
         it("rejects wrong element", function(){
             var description = {array:{boolean:opts}};
-            assert.throws(()=>guarantee(description, [true,'one']), /guarantee excpetion. Value\[1\] is not "boolean"/);
+            assert.throws(()=>guarantee(description, [true,'one']), /guarantee exception. Value\[1\] is not "boolean"/);
         })
         it("rejects wrong element in an object with array", function(){
             var description = {object:{omega:{array:{boolean:opts}}}};
-            assert.throws(()=>guarantee(description, {omega:[[]]}), /guarantee excpetion. Value\.omega\[0\] is not "boolean"/);
+            assert.throws(()=>guarantee(description, {omega:[[]]}), /guarantee exception. Value\.omega\[0\] is not "boolean"/);
         })
         it("rejects non array in object", function(){
             var description = {object:{omega:{array:{boolean:opts}}}};
-            assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. Value\.omega is not an array and must be/);
+            assert.throws(()=>guarantee(description, {omega:false}), /guarantee exception. Value\.omega is not an array and must be/);
         })
     })
     describe("recordString", function(){
@@ -156,19 +168,19 @@ describe("guarantee",function(){
         })
         it("rejects non recordString", function(){
             var description = {recordString:{boolean:opts}};
-            assert.throws(()=>guarantee(description, true), /guarantee excpetion. Value is not a Record<string,T> and must be/);
+            assert.throws(()=>guarantee(description, true), /guarantee exception. Value is not a Record<string,T> and must be/);
         })
         it("rejects wrong element", function(){
             var description = {array:{boolean:opts}};
-            assert.throws(()=>guarantee(description, [true,'one']), /guarantee excpetion. Value\[1\] is not "boolean"/);
+            assert.throws(()=>guarantee(description, [true,'one']), /guarantee exception. Value\[1\] is not "boolean"/);
         })
         it("rejects wrong element in an object with recordString", function(){
             var description = {object:{omega:{recordString:{boolean:opts}}}};
-            assert.throws(()=>guarantee(description, {omega:{one:[]}}), /guarantee excpetion. Value\.omega\[one\] is not "boolean"/);
+            assert.throws(()=>guarantee(description, {omega:{one:[]}}), /guarantee exception. Value\.omega\[one\] is not "boolean"/);
         })
         it("rejects non recordString in object", function(){
             var description = {object:{omega:{recordString:{boolean:opts}}}};
-            assert.throws(()=>guarantee(description, {omega:false}), /guarantee excpetion. Value\.omega is not a Record<string,T> and must be/);
+            assert.throws(()=>guarantee(description, {omega:false}), /guarantee exception. Value\.omega is not a Record<string,T> and must be/);
         })
     })
     describe("union", function(){
@@ -186,7 +198,7 @@ describe("guarantee",function(){
         })
         it("reject wrong type", function(){
             var any:any = false;
-            assert.throws(()=>guarantee({union: [{string:opts},{number:opts}]}, any),/guarantee excpetion. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
+            assert.throws(()=>guarantee({union: [{string:opts},{number:opts}]}, any),/guarantee exception. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
         })
     })
     describe("literal", function(){
@@ -247,7 +259,7 @@ describe("guarantee",function(){
             var value = 52;
             assert.throws(()=>{
                 result = guarantee(description, value);
-            },/guarantee excpetion. Value is not "Date"/)
+            },/guarantee exception. Value is not "Date"/)
         })
         it("detects invalid class", function(){
             var description = {object:{due:{class: Date}, pattern:{class:RegExp}, other:{class:RegExp}}};
@@ -256,7 +268,7 @@ describe("guarantee",function(){
             assert.throws(()=>{
                 // @ts-expect-error Ok: Type '{ due: Date; pattern: RegExp; other: RegExp; }' is not assignable to type '{ due: Date; pattern: RegExp; other: Date; }'.
                 result = guarantee(description, value);
-            },/guarantee excpetion. Value.other is not "RegExp"/);
+            },/guarantee exception. Value.other is not "RegExp"/);
             assert.notDeepEqual(value, result);
         })
     })

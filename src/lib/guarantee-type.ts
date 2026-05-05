@@ -21,25 +21,54 @@ export type Description =
 
 export type Constructor<T> = new(...args: any[]) => T;
 
+// ─── helpers para object con opcionalidad correcta ────────────────────────────
+
+type OptionalKeys<T> = {
+    [K in keyof T]: T[K] extends { optional: any } ? K : never
+}[keyof T]
+
+type RequiredKeys<T> = Exclude<keyof T, OptionalKeys<T>>
+
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never
+
+type ObjectDefinedType<T> = Expand<
+    { [K in RequiredKeys<T>]: T[K] extends Description ? DefinedType<T[K]> : unknown }
+    & 
+    { [K in OptionalKeys<T>]?: T[K] extends { optional: infer Inner }
+        ? Inner extends Description ? DefinedType<Inner> : unknown
+        : unknown 
+    }
+>
+
+// ─── tipo base: solo primitivos y class, sin recursión ────────────────────────
+
 export type SimpleDefinedType<TDescription extends Description> = 
-    TDescription extends { string : Opts } ? string  :
-    TDescription extends { number : Opts } ? number  :
-    TDescription extends { boolean: Opts } ? boolean :
-    TDescription extends { bigint : Opts } ? bigint  :
-    TDescription extends { symbol : Opts } ? symbol  :
-    TDescription extends { object: infer T} ? {[K in keyof T] : ( T[K] extends Description ? DefinedType<T[K]> : unknown)} :
-    TDescription extends { array: infer T} ? ( T extends Description ? DefinedType<T>[] : unknown ):
-    TDescription extends { nullable: infer T } ? ( T extends { nullable: infer _ } ? unknown : T extends Description ? SimpleDefinedType<T>|null : unknown) :
-    TDescription extends { optional: infer T } ? ( T extends { optional: infer _ } ? unknown : T extends { nullable: infer _ } ? unknown : T extends Description ? SimpleDefinedType<T>|undefined : unknown) :
-    TDescription extends { class: infer T } ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
+    TDescription extends { string : Opts }   ? string  :
+    TDescription extends { number : Opts }   ? number  :
+    TDescription extends { boolean: Opts }   ? boolean :
+    TDescription extends { bigint : Opts }   ? bigint  :
+    TDescription extends { symbol : Opts }   ? symbol  :
+    TDescription extends { class: infer T }  ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
     TDescription extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
-    unknown
+    never
+
+// ─── tipo principal: único punto de recursión ─────────────────────────────────
 
 export type DefinedType<TDescription extends Description> = 
-    TDescription extends { recordString : infer T } ? ( T extends Description ? Record<string, SimpleDefinedType<T>> : unknown) :
-    TDescription extends { union: (infer T) [] } ? ( T extends Description ? SimpleDefinedType<T> : unknown) :
-    TDescription extends { optional: { recordString : infer T } } ? ( T extends Description ? Record<string, SimpleDefinedType<T>> | undefined : unknown) :
+    TDescription extends { recordString: infer T }  ? ( T extends Description ? Record<string, DefinedType<T>> : unknown) :
+    TDescription extends { union: (infer T)[] }      ? ( T extends Description ? DefinedType<T> : unknown) :
+    TDescription extends { object: infer T }         ? ObjectDefinedType<T> :
+    TDescription extends { array: infer T }          ? ( T extends Description ? DefinedType<T>[] : unknown ) :
+    TDescription extends { nullable: infer T }       ? ( T extends Description ? DefinedType<T> | null : unknown ) :
+    TDescription extends { optional: infer T }       ? ( T extends Description ? DefinedType<T> | undefined : unknown ) :
     SimpleDefinedType<TDescription>
+
+// ─── alias público para compatibilidad ───────────────────────────────────────
+
+/** @deprecated use DefinedType instead */
+export type GuaranteedType<T extends Description> = DefinedType<T>
+
+// ─── runtime ──────────────────────────────────────────────────────────────────
 
 export function valueGuarantor(type:Values){
     return function guarantor(_opts:Opts, value:any, path:string, errors:string[]){
@@ -48,8 +77,6 @@ export function valueGuarantor(type:Values){
 }
 
 export var errorTypeFinder = {
-    // nullable: function(){},
-    // optiontal: function(){},
     string :valueGuarantor('string'),
     number :valueGuarantor('number'),
     boolean:valueGuarantor('boolean'),
@@ -76,12 +103,6 @@ export var errorTypeFinder = {
     },
     union: function(descriptions:Description[], value:any, path:string, errors:string[]){
         var incompatibilities:string[] = []; 
-        /* array implementation:
-        for(var i=0; i<descriptions.length; i++){
-            findErrorsInTypes(descriptions[i], value, `${path}(in union)`, incompatibilities);
-            if(incompatibilities.length == i) return;
-        }
-        */
         var step = 0;
         for(var n in descriptions){
             findErrorsInTypes(descriptions[n], value, `${path}(in union)`, incompatibilities);
@@ -122,46 +143,11 @@ function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, v
             }
             return;
         }
-        /* else if ( description instanceof Array ) {
-            var unionErrors:string[] = []
-            for (var alternative of description) {
-                var alternativeErrors:string[] = []
-                var alternativeValue = findErrorsInTypes(alternative, value, path, alternativeErrors)
-                if (alternativeErrors.length == 0) return alternativeValue
-                unionErrors = unionErrors.concat(alternativeErrors);
-            }
-            errors.push
-        } */ 
-        /*
-        else {
-            var theTag: keyof typeof errorTypeFinder | null = null
-            var theDescription: CurrentD | null = null;
-            if (description instanceof Array) {
-                theTag = "union"
-                theDescription = description;
-            } else {
-                for (var firstTag in description) {
-                    if (firstTag in errorTypeFinder) {
-                        // @ts-expect-error This should not be an error because firstTag is in errorTypeFinder then it is keyof typeof errorTypeFinder
-                        theTag = firstTag
-                        // @ts-expect-error This is an error because CurrentD can be an array
-                        theDescription = description[theTag]
-                    } else {
-                        errors.push(`${firstTag} is not a valid type`);
-                        return; 
-                    }
-                    break;
-                }
-            }
-            if (theTag == null) return;
-            errorTypeFinder[theTag](theDescription, value, path, errors);
-        } */
-
     }
 }
 
 export function throwAllErrorsInAString(errors:string[]){
-    if(errors.length) throw new Error(`guarantee excpetion. ${errors.join(', ')}`);
+    if(errors.length) throw new Error(`guarantee exception. ${errors.join(', ')}`);
 }
 
 export function consoleErrorAllErrors(errors:string[]){
@@ -185,23 +171,6 @@ export function guarantee<CurrentD extends Description>(description:CurrentD, va
 }
 
 export var nullOpts:Opts = {}
-/*
-type IS = {
-    string   : {string:Opts},
-    number   : {number:Opts},
-    boolean  : {boolean:Opts},
-    bigint   : {bigint:Opts},
-    symbol   : {symbol:Opts},
-    class    : (c: Constructor<any>)=>Description,
-    Date     : Description,
-    // object   : <T>(descriptions:{[K in keyof T]: T[K]})=>( {object:{[K in keyof T]: T[K]}})
-    object   : <T>(descriptions:T)=>( {object:T} )
-    nullable : {[k in keyof IS]: {nullable:Pick<IS,k>}},
-    optional : {[k in keyof IS]: {optional:Pick<IS,k>}},
-    array    : {[k in keyof IS]: {array   :Pick<IS,k>}},
-    // union    : Description
-}
-*/
 
 type IS1 = {
     string   : {string:Opts},
@@ -247,22 +216,6 @@ type IS = IS2 & {
     union: <T>(description:T[]) => ( {union: T[]}),
     literal: <T extends Literal>(description:T) => ( {literal: T} )
 }
-
-/*
-type IS2 = IS1 & {
-    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}},
-    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}},
-    array    : {[k in keyof IS1]: {array   :Pick<IS1,k>}},
-}
-
-type I3={
-    optional : {optional:IS},
-    object   : <T>(o:{[K in keyof T]: T[K]})=>{ object: {[K in keyof T]: T[K]} },
-    array    : {array:IS},
-    union    : Description,
-    
-}
-*/
 
 export var is:IS = {
     string   : {string  : {}},
@@ -318,6 +271,5 @@ function isModificator(name:(keyof IS)[]): IS {
 
 export function jsonParse<T extends Description>(description:T, jsonString:string): DefinedType<T>{
     var parsedObject = JSON.parse(jsonString);
-    var result: DefinedType<T> = guarantee(description, parsedObject);
-    return result;
+    return guarantee(description, parsedObject) as DefinedType<T>;
 }

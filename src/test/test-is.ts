@@ -119,7 +119,7 @@ describe("guarantee",function(){
         })
         it("number cannot be assigned to string", function(){
             var value:any = 43;
-            assert.throws(()=>guarantee(is.string, undefined), /guarantee excpetion. Value is undefined but type is not nullable/);
+            assert.throws(()=>guarantee(is.string, undefined), /guarantee exception. Value is undefined but type is not nullable/);
         })
         it("can set a optional variable", function(){
             var value:any = null;
