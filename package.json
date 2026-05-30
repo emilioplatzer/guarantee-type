@@ -1,7 +1,7 @@
 {
     "name": "guarantee-type",
     "description": "guarantee the type of a plain object",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "repository": "emilioplatzer/guarantee-type",
     "files": [
         "lib",
@@ -43,7 +43,7 @@
         "qa-control": "^0.6.11",
         "typescript": "^5.7.2"
     },
-    "qa-control":{
+    "qa-control": {
         "profile": "minimum",
         "run-in": "both",
         "type": "lib"
