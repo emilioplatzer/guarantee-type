@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "outDir": "../../test-build-local",
+        "types": ["mocha", "node"],
         "strict": true,
         "target": "ES2015",
         "module": "CommonJS",
