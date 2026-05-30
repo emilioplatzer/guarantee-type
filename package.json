@@ -40,6 +40,12 @@
         "expect.js": "^0.3.1",
         "mocha": "^11.0.1",
         "nyc": "^17.1.0",
+        "qa-control": "^0.6.11",
         "typescript": "^5.7.2"
+    },
+    "qa-control":{
+        "profile": "minimum",
+        "run-in": "both",
+        "type": "lib"
     }
 }

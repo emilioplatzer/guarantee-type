@@ -172,49 +172,40 @@ export function guarantee<CurrentD extends Description>(description:CurrentD, va
 
 export var nullOpts:Opts = {}
 
-type IS1 = {
-    string   : {string:Opts},
-    number   : {number:Opts},
-    boolean  : {boolean:Opts},
-    bigint   : {bigint:Opts},
-    symbol   : {symbol:Opts},
-    class    : <T>(c: Constructor<T>) => {class: Constructor<T>},
+// envuelve la hoja con la pila de modificadores acumulados, en el mismo orden
+// que el `wrap` del runtime: el primer modificador queda más afuera.
+type WrapMods<Mods extends string[], Leaf> =
+    Mods extends [infer Head extends string, ...infer Tail extends string[]]
+        ? { [K in Head]: WrapMods<Tail, Leaf> }
+        : Leaf
+
+// hojas accesibles en cualquier punto de la cadena, ya envueltas con los modificadores.
+type Leaves<M extends string[]> = {
+    string   : WrapMods<M, {string :Opts}>,
+    number   : WrapMods<M, {number :Opts}>,
+    boolean  : WrapMods<M, {boolean:Opts}>,
+    bigint   : WrapMods<M, {bigint :Opts}>,
+    symbol   : WrapMods<M, {symbol :Opts}>,
+    Date     : WrapMods<M, {class: Constructor<Date>}>,
+    class    : <T>(c: Constructor<T>) => WrapMods<M, {class: Constructor<T>}>,
+    object   : <T>(descriptions:T)    => WrapMods<M, {object:T}>,
 }
 
-type IS2 = IS1 & {
-    object   : <T>(descriptions:T)=>( {object:T} )
-    Date     : {class: Constructor<Date>}
+// modificadores que agregan un nivel a la pila y devuelven otra cadena.
+type Modifiers<M extends string[]> = {
+    nullable     : Chain<[...M, 'nullable'    ]>,
+    optional     : Chain<[...M, 'optional'    ]>,
+    array        : Chain<[...M, 'array'       ]>,
+    recordString : Chain<[...M, 'recordString']>,
 }
 
-type IS = IS2 & {
-    recordString: {[k in keyof IS1]: {recordString:Pick<IS1,k>}} & {
-        nullable : {[k in keyof IS1]: {recordString:{nullable:Pick<IS1,k>}}},
-        optional : {[k in keyof IS1]: {recordString:{optional:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {recordString:{object:T}} )
-    },
-    nullable : {[k in keyof IS1]: {nullable:Pick<IS1,k>}} & {
-        array : {[k in keyof IS1]: {nullable:{array:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {nullable:{object:T}} )
-    } & {
-        Date: {nullable:{class: Constructor<Date>}} 
-    },
-    optional : {[k in keyof IS1]: {optional:Pick<IS1,k>}} & {
-        array : {[k in keyof IS1]: {optional:{array:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {optional:{object:T}} )
-    } & {
-        recordString : {[k in keyof IS1]: {optional:{recordString:Pick<IS1,k>}}},
-    },
-    array: {[k in keyof IS1]: {array:Pick<IS1,k>}} & {
-        nullable : {[k in keyof IS1]: {array:{nullable:Pick<IS1,k>}}},
-        optional : {[k in keyof IS1]: {array:{optional:Pick<IS1,k>}}},
-    } & {
-        object:<T>(descriptions:T)=>( {array:{object:T}} )
-    },
-    union: <T>(description:T[]) => ( {union: T[]}),
-    literal: <T extends Literal>(description:T) => ( {literal: T} )
+type Chain<M extends string[]> = Leaves<M> & Modifiers<M>
+
+// union y literal quedan solo en el nivel superior (no entran en la cadena de
+// modificadores). Para un union anidado se usa el formato puro {union:...}.
+type IS = Chain<[]> & {
+    union   : <T>(description:T[]) => ( {union: T[]} ),
+    literal : <T extends Literal>(description:T) => ( {literal: T} ),
 }
 
 export var is:IS = {
@@ -257,8 +248,8 @@ function isModificator(name:(keyof IS)[]): IS {
                         }
                         return value;
                     }
-                    if (prop == 'object') {
-                        return (x:any) => wrap({object: x})
+                    if (typeof value == 'function') {
+                        return (...args:any[]) => wrap((value as Function)(...args))
                     } else {
                         return wrap(value)
                     }
