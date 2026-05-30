@@ -31,11 +31,18 @@ type RequiredKeys<T> = Exclude<keyof T, OptionalKeys<T>>
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never
 
+// recursión hacia adentro. El único caso sin fondo es DefinedType<Description>
+// (la unión recursiva entera), que TS instancia al evaluar el constraint durante
+// una inferencia genérica; `[Description] extends [T]` lo corta a unknown. Para
+// una descripción concreta el guard es falso y barato, y como queda en los puntos
+// de descenso (no en el tope), DefinedType<T> con T genérico conserva su forma.
+type Rec<T> = [Description] extends [T] ? unknown : T extends Description ? DefinedType<T> : unknown
+
 type ObjectDefinedType<T> = Expand<
-    { [K in RequiredKeys<T>]: T[K] extends Description ? DefinedType<T[K]> : unknown }
+    { [K in RequiredKeys<T>]: Rec<T[K]> }
     & 
     { [K in OptionalKeys<T>]?: T[K] extends { optional: infer Inner }
-        ? Inner extends Description ? DefinedType<Inner> : unknown
+        ? Rec<Inner>
         : unknown 
     }
 >
@@ -55,12 +62,12 @@ export type SimpleDefinedType<TDescription extends Description> =
 // ─── tipo principal: único punto de recursión ─────────────────────────────────
 
 export type DefinedType<TDescription extends Description> = 
-    TDescription extends { recordString: infer T }  ? ( T extends Description ? Record<string, DefinedType<T>> : unknown) :
-    TDescription extends { union: (infer T)[] }      ? ( T extends Description ? DefinedType<T> : unknown) :
+    TDescription extends { recordString: infer T }  ? Record<string, Rec<T>> :
+    TDescription extends { union: (infer T)[] }      ? Rec<T> :
     TDescription extends { object: infer T }         ? ObjectDefinedType<T> :
-    TDescription extends { array: infer T }          ? ( T extends Description ? DefinedType<T>[] : unknown ) :
-    TDescription extends { nullable: infer T }       ? ( T extends Description ? DefinedType<T> | null : unknown ) :
-    TDescription extends { optional: infer T }       ? ( T extends Description ? DefinedType<T> | undefined : unknown ) :
+    TDescription extends { array: infer T }          ? Rec<T>[] :
+    TDescription extends { nullable: infer T }       ? Rec<T> | null :
+    TDescription extends { optional: infer T }       ? Rec<T> | undefined :
     SimpleDefinedType<TDescription>
 
 // ─── alias público para compatibilidad ───────────────────────────────────────

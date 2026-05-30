@@ -1,4 +1,4 @@
-import { Description, Constructor, DefinedType, is } from "../lib/guarantee-type";
+import { Description, Constructor, DefinedType, is, guarantee } from "../lib/guarantee-type";
 import * as assert from "assert";
 
 // Reproduce el escenario que rompía a un consumidor (serial-tester + type-fest):
@@ -17,11 +17,15 @@ type DeepPartialOnUndefined<T> =
         { [K in keyof T as undefined extends T[K] ? never : K]:  DeepPartialOnUndefined<T[K]> }
     ) : T
 
-// Imita la firma de callProcedure de serial-tester.
-declare function callProcedure<T extends Description, U extends Description>(
+// Imita la firma de callProcedure de serial-tester. La implementación es mínima:
+// valida los params contra parameters y devuelve el valor garantizado contra result.
+function callProcedure<T extends Description, U extends Description>(
     target: { parameters: T, result: U },
     params: DeepPartialOnUndefined<DefinedType<NoInfer<T>>>
-): DefinedType<NoInfer<U>>
+): DefinedType<NoInfer<U>>{
+    guarantee(target.parameters, params)
+    return guarantee(target.result, params)
+}
 
 describe("deep instantiation (no infinite types)", function(){
     it("a plain description with many fields does not explode", function(){
