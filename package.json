@@ -14,8 +14,7 @@
         "test": "tsc -p src/lib && tsc -p src/test && nyc mocha test-build-local/test/test*",
         "test-wc": "mocha test-build-local/test/test",
         "preversion": "npm test",
-        "version": "npm run build",
-        "postversion": "git push && git push --tags"
+        "version": "npm run build"
     },
     "nyc": {
         "exclude": [
@@ -46,6 +45,7 @@
     "qa-control": {
         "profile": "minimum",
         "run-in": "both",
-        "type": "lib"
+        "type": "lib",
+        "gha": "all"
     }
 }

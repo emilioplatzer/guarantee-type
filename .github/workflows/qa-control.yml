@@ -1,11 +1,11 @@
-name: qa-control
+name: QA control
 
 on:
   push:
-    branches: [ main ]
+    branches: [master]
   pull_request:
-    branches: [ main ]
+    branches: [master]
 
 jobs:
-  call-workflow:
-    uses: codenautas/.github/.github/workflows/qa-control.yaml@main
+  qa:
+    uses: codenautas/.github/.github/workflows/qa-control.yaml@v1
