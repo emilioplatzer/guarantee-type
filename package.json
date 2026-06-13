@@ -12,6 +12,7 @@
     "scripts": {
         "build": "tsc -p src/lib",
         "test": "tsc -p src/lib && tsc -p src/test && nyc mocha test-build-local/test/test*",
+        "test-ci": "npm test",
         "test-wc": "mocha test-build-local/test/test",
         "preversion": "npm test",
         "version": "npm run build"
