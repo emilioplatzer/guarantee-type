@@ -4,7 +4,7 @@ export type Keys = Values | 'recordString' | 'nullable' | 'optional' | 'object' 
 
 export type Opts = {};
 
-export type Description = 
+export type Description =
     { string : Opts } |
     { number : Opts } |
     { boolean: Opts } |
@@ -13,11 +13,11 @@ export type Description =
     { recordString : Description } |
     { nullable: Description } |
     { optional: Description } |
-    { array: Description } | 
-    { union: Description [] } | 
-    { class: Function } | 
+    { array: Description } |
+    { union: Description [] } |
+    { class: Function } |
     { literal: Literal } |
-    { object: {[K in keyof any]: Description} } 
+    { object: {[K in keyof any]: Description} }
 
 export type Constructor<T> = new(...args: any[]) => T;
 
@@ -40,28 +40,28 @@ type Rec<T> = [Description] extends [T] ? unknown : T extends Description ? Defi
 
 type ObjectDefinedType<T> = Expand<
     { [K in RequiredKeys<T>]: Rec<T[K]> }
-    & 
+    &
     { [K in OptionalKeys<T>]?: T[K] extends { optional: infer Inner }
         ? Rec<Inner>
-        : unknown 
+        : unknown
     }
 >
 
 // ─── tipo base: solo primitivos y class, sin recursión ────────────────────────
 
-export type SimpleDefinedType<TDescription extends Description> = 
+export type SimpleDefinedType<TDescription extends Description> =
     TDescription extends { string : Opts }   ? string  :
     TDescription extends { number : Opts }   ? number  :
     TDescription extends { boolean: Opts }   ? boolean :
     TDescription extends { bigint : Opts }   ? bigint  :
     TDescription extends { symbol : Opts }   ? symbol  :
-    TDescription extends { class: infer T }  ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : 
+    TDescription extends { class: infer T }  ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) :
     TDescription extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
     never
 
 // ─── tipo principal: único punto de recursión ─────────────────────────────────
 
-export type DefinedType<TDescription extends Description> = 
+export type DefinedType<TDescription extends Description> =
     TDescription extends { recordString: infer T }  ? Record<string, Rec<T>> :
     TDescription extends { union: (infer T)[] }      ? Rec<T> :
     TDescription extends { object: infer T }         ? ObjectDefinedType<T> :
@@ -109,7 +109,7 @@ export var errorTypeFinder = {
         }else errors.push(`${path} is not an array and must be`);
     },
     union: function(descriptions:Description[], value:any, path:string, errors:string[]){
-        var incompatibilities:string[] = []; 
+        var incompatibilities:string[] = [];
         var step = 0;
         for(var n in descriptions){
             findErrorsInTypes(descriptions[n], value, `${path}(in union)`, incompatibilities);
@@ -119,7 +119,6 @@ export var errorTypeFinder = {
     },
     class: function guarantor(classConstructor:Function, value:any, path:string, errors:string[]){
         if ( !(value instanceof classConstructor) ) errors.push(`${path} is not "${
-            /* istanbul ignore next */
             classConstructor.name??'class'
         }"`);
     },
@@ -139,7 +138,7 @@ function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, v
             return findErrorsInTypes(description.optional, value, path, errors);
     }else{
         if ( value == null ) errors.push(`${path} is ${value} but type is not nullable`)
-        else 
+        else
         for(var firstTag in description){
             if(firstTag in errorTypeFinder){
                 var theTag = firstTag as unknown as keyof typeof errorTypeFinder;
@@ -262,7 +261,7 @@ function isModificator(name:(keyof IS)[]): IS {
                     }
                 }
             }
-        }        
+        }
     });
     return proxy;
 }

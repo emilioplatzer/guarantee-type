@@ -9,10 +9,10 @@ guarantee the type of a plain object
 [!--lang:*-->
 
 <!-- cucardas -->
-![extending](https://img.shields.io/badge/stability-extending-orange.svg)
 [![npm-version](https://img.shields.io/npm/v/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
 [![downloads](https://img.shields.io/npm/dm/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
 [![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml)
+[![coverage](https://img.shields.io/coveralls/emilioplatzer/guarantee-type/master.svg)](https://coveralls.io/r/emilioplatzer/guarantee-type)
 [![security](https://socket.dev/api/badge/npm/package/guarantee-type)](https://socket.dev/npm/package/guarantee-type)
 [![qa-control](https://github.com/emilioplatzer/guarantee-type/actions/workflows/qa-control.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/qa-control.yml)
 
@@ -32,21 +32,21 @@ también disponible en:
 
 [!--lang:es-->
 
-Cuando en [_Typescript_](typescriptlang.org) llegamos al momento de tener todos nuestros sistemas fuertemente tipados 
-aparecen situaciones donde es difícil evitar el uso de `any`. 
+Cuando en [_Typescript_](typescriptlang.org) llegamos al momento de tener todos nuestros sistemas fuertemente tipados
+aparecen situaciones donde es difícil evitar el uso de `any`.
 
-Por ejemplo cuando levantamos datos de `LocalStorage`, los transferimos a través de la red 
+Por ejemplo cuando levantamos datos de `LocalStorage`, los transferimos a través de la red
 o los levantamos de la base de datos y nuestro [`ORM`](https://es.wikipedia.org/wiki/Asignaci%C3%B3n_objeto-relacional)
-no es fuertemente tipado en las respuestas, lo que obtenemos es un objeto `any`. 
+no es fuertemente tipado en las respuestas, lo que obtenemos es un objeto `any`.
 
 <!--lang:en--]
 
-When we use [_Typescript_](typescriptlang.org), in some point we want to use types everywere. 
-But in some cases is very dificult to avoid the use of `any`. 
+When we use [_Typescript_](typescriptlang.org), in some point we want to use types everywere.
+But in some cases is very dificult to avoid the use of `any`.
 
-For example, when we get data from LocalStorage, we transfer data in the network 
+For example, when we get data from LocalStorage, we transfer data in the network
 or we retieve from the database and ower [`ORM`](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping)
-is no typed enought. 
+is no typed enought.
 
 [!--lang:*-->
 
@@ -54,7 +54,7 @@ is no typed enought.
 type Person = {
     name: string,
     age?: number,
-    active: boolean, 
+    active: boolean,
     due: Date
 };
 
@@ -72,15 +72,15 @@ console.log(res.rows[0].messagggge)  // 💩 receiving undefined because the typ
 
 <!--lang:es-->
 
-Actualmente [_Typescript_](typescriptlang.org) no impide asignar `any` a un tipo determinado. 
-Sería bueno tener una manera de que lo detecte, pero independientemente de eso 
-necesitamos una manera de validar y setear los tipos de forma fuertemente tipada. 
+Actualmente [_Typescript_](typescriptlang.org) no impide asignar `any` a un tipo determinado.
+Sería bueno tener una manera de que lo detecte, pero independientemente de eso
+necesitamos una manera de validar y setear los tipos de forma fuertemente tipada.
 
 <!--lang:en--]
 
 Currently [_Typescript_](typescriptlang.org) do not avoid the use of `any` in the
-right hand of an assignation. But regardless of that we need a way to validate 
-and set types of received data. 
+right hand of an assignation. But regardless of that we need a way to validate
+and set types of received data.
 
 
 [!--lang:*-->
@@ -118,22 +118,22 @@ console.log(guarantee( is.object({message: is.string}), res.rows[0]).messagggge)
 
 <!--lang:es-->
 
-El mecanismo `is` para describir los tipos es una abreviación. 
+El mecanismo `is` para describir los tipos es una abreviación.
 Las descripciones se pueden escribir y transmitir en un objeto que puede
 codificarse en formato `JSON`. Por ejemplo la descripción `descriptionPerson`
 puede esciribirse directamente en un objetos simple:
 
 <!--lang:en--]
 
-Using `is` for describe the type is optional. 
+Using `is` for describe the type is optional.
 The descriptions can be defined in a plain _Javascript_ object that
-can be serializable and enceded with `JSON`. 
+can be serializable and enceded with `JSON`.
 For example `descriptionPerson` can be writen like this:
 
 [!--lang:*-->
 
 ```ts
-var descriptionPerson = { 
+var descriptionPerson = {
     object: {
         name: { string: {} },
         age: { optional: { number: {} },

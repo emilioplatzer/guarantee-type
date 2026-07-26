@@ -61,7 +61,7 @@ describe("internal representation of is", function(){
         // @ts-expect-error x is not any
         var n:null = x;
         x=y;
-        y=x; 
+        y=x;
     })
     it("string[]|null", function(){
         assert.deepEqual(is.nullable.array.string, {nullable:{array:{string: nullOpts}}});
@@ -70,7 +70,7 @@ describe("internal representation of is", function(){
         // @ts-expect-error x is not any
         var n:null = x;
         x=y;
-        y=x; 
+        y=x;
     })
     it("optional object", function(){
         var description = is.optional.object({name:is.string});
@@ -99,13 +99,13 @@ describe("internal representation of is", function(){
 describe("guarantee",function(){
     describe("values",function(){
         it("string", function(){
-            var result:string; 
+            var result:string;
             var value:any = "any string";
             result = guarantee(is.string, value);
             assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
-            var resultN:number = 0; 
+            var resultN:number = 0;
             var value:any = "any string";
             // @ts-expect-error
             resultN = guarantee(is.string, value);
@@ -231,7 +231,7 @@ describe("guarantee",function(){
             });
             var result: {name:string, birthdate: Date, age: number};
             function nullObject<T extends Description>(description:T):DefinedType<T>{
-                // @ts-expect-error this is a naive implementation. 
+                // @ts-expect-error this is a naive implementation.
                 var result: DefinedType<T> = {}
                 for (var key in description) {
                     result[key] = null;

@@ -1,6 +1,8 @@
 {
     "compilerOptions": {
         "outDir": "../../test-build-local",
+        "sourceMap": true,
+        "inlineSources": true,
         "types": ["mocha", "node"],
         "strict": true,
         "target": "ES2015",

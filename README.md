@@ -2,10 +2,10 @@
 guarantee the type of a plain object
 
 
-![extending](https://img.shields.io/badge/stability-extending-orange.svg)
 [![npm-version](https://img.shields.io/npm/v/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
 [![downloads](https://img.shields.io/npm/dm/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
 [![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml)
+[![coverage](https://img.shields.io/coveralls/emilioplatzer/guarantee-type/master.svg)](https://coveralls.io/r/emilioplatzer/guarantee-type)
 [![security](https://socket.dev/api/badge/npm/package/guarantee-type)](https://socket.dev/npm/package/guarantee-type)
 [![qa-control](https://github.com/emilioplatzer/guarantee-type/actions/workflows/qa-control.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/qa-control.yml)
 

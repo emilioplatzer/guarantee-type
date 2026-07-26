@@ -11,15 +11,17 @@
     "types": "lib/guarantee-type.d.ts",
     "scripts": {
         "build": "tsc -p src/lib",
-        "test": "tsc -p src/lib && tsc -p src/test && nyc mocha test-build-local/test/test*",
-        "test-ci": "npm test",
+        "test": "tsc -p src/lib && tsc -p src/test && mocha test-build-local/test/test*.js",
+        "test-ci": "tsc -p src/lib && tsc -p src/test && c8 mocha test-build-local/test/test*.js",
         "test-wc": "mocha test-build-local/test/test",
         "preversion": "npm test",
         "version": "npm run build"
     },
-    "nyc": {
+    "c8": {
         "exclude": [
-            "test-build-local/test"
+            "test-build-local/test",
+            "src/test/**",
+            "lib/**"
         ],
         "reporter": [
             "html",
@@ -36,17 +38,20 @@
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
-        "@types/node": "^22.10.1",
+        "@types/node": "^26.1.1",
         "expect.js": "^0.3.1",
-        "mocha": "^11.0.1",
-        "nyc": "^17.1.0",
-        "qa-control": "^0.6.11",
-        "typescript": "^5.9.3"
+        "mocha": "^12.0.0-rc.5",
+        "c8": "^12.0.0",
+        "qa-control": "^0.8.1",
+        "typescript": "^5.9.2"
     },
     "qa-control": {
-        "profile": "minimum",
         "run-in": "both",
         "type": "lib",
-        "gha": "all"
+        "coverage": 100,
+        "gha": "all",
+        "silenced": [
+            "first_lines_does_not_match_in_file_1"
+        ]
     }
 }

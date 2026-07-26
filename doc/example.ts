@@ -1,7 +1,7 @@
 type Person = {
     name: string,
     age?: number,
-    active: boolean, 
+    active: boolean,
     due: Date
 };
 

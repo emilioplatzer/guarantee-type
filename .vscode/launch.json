@@ -49,6 +49,6 @@
             "outFiles": [
                 "${workspaceFolder}/lib/**/*.js"
             ]
-        }        
+        }
     ]
 }

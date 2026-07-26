@@ -11,13 +11,13 @@ class ExampleForTest{}
 describe("guarantee",function(){
     describe("values",function(){
         it("string", function(){
-            var result:string; 
+            var result:string;
             var value:any = "any string";
             result = guarantee({string:opts}, value);
             assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
-            var resultN:number = 0; 
+            var resultN:number = 0;
             var value:any = "any string";
             // @ts-expect-error Ok: Type 'string' is not assignable to type 'number'.
             resultN = guarantee({string:opts}, value);
@@ -269,6 +269,15 @@ describe("guarantee",function(){
                 result = guarantee(description, value);
             },/guarantee exception. Value.other is not "RegExp"/);
             assert.notDeepEqual(value, result);
+        })
+        it("rejects value of an anonymous class", function(){
+            var AnonymousClass = (()=>class{})();
+            Object.defineProperty(AnonymousClass, 'name', {value:undefined});
+            var description = {class: AnonymousClass};
+            var value = 52;
+            assert.throws(()=>{
+                guarantee(description, value);
+            },/guarantee exception. Value is not "class"/)
         })
     })
     describe("optional assignations", function(){
