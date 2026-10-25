@@ -100,13 +100,13 @@ describe("guarantee",function(){
     describe("values",function(){
         it("string", function(){
             var result:string;
-            var value:any = "any string";
+            var value:any = "any string"; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee(is.string, value);
             assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
             var resultN:number = 0;
-            var value:any = "any string";
+            var value:any = "any string"; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             // @ts-expect-error
             resultN = guarantee(is.string, value);
             // This is JS, guarantee don't throws if the result variable is of different type
@@ -118,11 +118,11 @@ describe("guarantee",function(){
             assert.notStrictEqual(resultS, "42");
         })
         it("number cannot be assigned to string", function(){
-            var value:any = 43;
+            var value:any = 43; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             assert.throws(()=>guarantee(is.string, undefined), /guarantee exception. Value is undefined but type is not nullable/);
         })
         it("can set a optional variable", function(){
-            var value:any = null;
+            var value:any = null; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             var result:boolean|null|undefined = guarantee(is.optional.boolean, value);
             var optional = guarantee(is.optional.boolean, value);
             optional = result;
@@ -202,7 +202,7 @@ describe("guarantee",function(){
     describe("union", function(){
         it("accepts any type with the last value", function(){
             var result: string|number|{}|boolean;
-            var any:any = true;
+            var any:any = true; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee(is.union([is.string,is.number,is.object({}),is.boolean]), any);
             assert.strictEqual(result, any);
         })
@@ -210,7 +210,7 @@ describe("guarantee",function(){
     describe("literal", function(){
         it("accept literal in union", function(){
             var result: "one"|"two";
-            var any:any = "one";
+            var any:any = "one"; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee(is.union([is.literal("one" as "one"), is.literal("two" as "two")]), any);
             assert.strictEqual(result, any);
         })

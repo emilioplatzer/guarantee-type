@@ -6,6 +6,7 @@ guarantee the type of a plain object
 [![downloads](https://img.shields.io/npm/dm/guarantee-type.svg)](https://npmjs.org/package/guarantee-type)
 [![build](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/build-and-test.yml)
 [![coverage](https://img.shields.io/coveralls/emilioplatzer/guarantee-type/master.svg)](https://coveralls.io/r/emilioplatzer/guarantee-type)
+[![sonar](https://sonarcloud.io/api/project_badges/measure?project=emilioplatzer_guarantee-type&metric=alert_status)](https://sonarcloud.io/summary/overall?id=emilioplatzer_guarantee-type)
 [![qa-control](https://github.com/emilioplatzer/guarantee-type/actions/workflows/qa-control.yml/badge.svg)](https://github.com/emilioplatzer/guarantee-type/actions/workflows/qa-control.yml)
 
 

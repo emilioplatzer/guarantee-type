@@ -12,13 +12,13 @@ describe("guarantee",function(){
     describe("values",function(){
         it("string", function(){
             var result:string;
-            var value:any = "any string";
+            var value:any = "any string"; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee({string:opts}, value);
             assert.equal(result, value);
         })
         it("detects TypeError string cannot be asigned to number", function(){
             var resultN:number = 0;
-            var value:any = "any string";
+            var value:any = "any string"; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             // @ts-expect-error Ok: Type 'string' is not assignable to type 'number'.
             resultN = guarantee({string:opts}, value);
             // This is JS, guarantee don't throws if the result variable is of different type
@@ -30,46 +30,46 @@ describe("guarantee",function(){
             assert.notStrictEqual(resultS, "42");
         })
         it("number cannot be assigned to string", function(){
-            var value:any = 43;
+            var value:any = 43; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             assert.throws(()=>guarantee({string:opts}, value), /guarantee exception. Value is not "string"/);
         })
         it("can set a optional variable", function(){
-            var value:any = null;
+            var value:any = null; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             var result:boolean|null|undefined = guarantee({optional:{boolean:opts}}, value);
             assert.strictEqual(result, value)
         })
         it("detects TypeError can set a optional variable", function(){
-            var value:any = true;
+            var value:any = true; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             // @ts-expect-error Ok: Type 'boolean | null | undefined' is not assignable to type 'boolean | null'.
             var result:boolean|null = guarantee({optional:{boolean:opts}}, value);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(result, true);
         })
         it("can set an object with an optional attribute", function(){
-            var value:any = {name:'me'};
+            var value:any = {name:'me'}; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             var result:{name:string, age?:number} = guarantee({object:{name:{string:opts}, age:{optional:{number:opts}}}}, value);
             assert.strictEqual(result, value)
         })
         it("cannot set an invalid object with an optional attribute", function(){
-            var value:any = {name:'me', age:false};
+            var value:any = {name:'me', age:false}; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             assert.throws(()=>{
                 var result:{name:string, age?:number} = guarantee({object:{name:{string:opts}, age:{optional:{number:opts}}}}, value);
             },/exception/);
         })
         it("can set a nullable variable", function(){
-            var value:any = null;
+            var value:any = null; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             var result:boolean|null = guarantee({nullable:{boolean:opts}}, value);
             assert.strictEqual(result, value)
         })
         it("detects TypeError can set a nullable variable", function(){
-            var value:any = true;
+            var value:any = true; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             // @ts-expect-error Ok: Type 'boolean | null' is not assignable to type 'boolean'.
             var result:boolean = guarantee({nullable:{boolean:opts}}, value);
             // This is JS, guarantee don't throws if the result variable is of different type
             assert.strictEqual(result, true);
         })
         it("invalid type in description", function(){
-            var value:any = 8.8;
+            var value:any = 8.8; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             var badDescription = {float8:opts};
             assert.throws(function(){
                 // @ts-expect-error Ok: Argument of type '{ float8: Opts; }' is not assignable to parameter of type 'Description'.
@@ -185,31 +185,31 @@ describe("guarantee",function(){
     describe("union", function(){
         it("accepts any type with the first value", function(){
             var result: string|number;
-            var any:any = "x";
+            var any:any = "x"; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee({union: [{string:opts},{number:opts}]}, any);
             assert.strictEqual(result, any);
         })
         it("accepts any type with the second value", function(){
             var result: string|number;
-            var any:any = 42;
+            var any:any = 42; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee({union: [{string:opts},{number:opts}]}, any);
             assert.strictEqual(result, any);
         })
         it("reject wrong type", function(){
-            var any:any = false;
+            var any:any = false; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             assert.throws(()=>guarantee({union: [{string:opts},{number:opts}]}, any),/guarantee exception. Value\(in union\) is not "string", Value\(in union\) is not "number"/);
         })
     })
     describe("literal", function(){
         it("accept literal number", function(){
             var result: 42;
-            var any:any = 42;
+            var any:any = 42; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             result = guarantee({literal: 42 as 42}, any);
             assert.strictEqual(result, any);
         })
         it("rejects other literal number", function(){
             var result: 43;
-            var any:any = 43;
+            var any:any = 43; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             assert.throws(()=>{
                 // @ts-expect-error 42 is not 43 Ok: Type '42' is not assignable to type '43'.
                 result = guarantee({literal: 42 as 42}, any);
@@ -226,7 +226,7 @@ describe("guarantee",function(){
             function anyError(errors:string[]){
                 viewed = errors;
             }
-            var any:any = false;
+            var any:any = false; // eslint-disable-line @typescript-eslint/no-explicit-any -- untyped input, as the one received from outside
             guaranteeOnError(anyError)
             var result:string|{x:number} = guarantee(description, any);
             assert.deepStrictEqual(viewed, [

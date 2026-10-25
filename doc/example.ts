@@ -7,6 +7,6 @@ type Person = {
 
 function print(person: Person){
     // ...
-};
+}
 
 print(JSON.parse(localStorage['person1'])) // 💩 receiving any

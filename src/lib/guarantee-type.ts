@@ -17,14 +17,14 @@ export type Description =
     { union: Description [] } |
     { class: Function } |
     { literal: Literal } |
-    { object: {[K in keyof any]: Description} }
+    { object: {[K in PropertyKey]: Description} }
 
-export type Constructor<T> = new(...args: any[]) => T;
+export type Constructor<T> = new(...args: any[]) => T; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // ─── helpers para object con opcionalidad correcta ────────────────────────────
 
 type OptionalKeys<T> = {
-    [K in keyof T]: T[K] extends { optional: any } ? K : never
+    [K in keyof T]: T[K] extends { optional: any } ? K : never // eslint-disable-line @typescript-eslint/no-explicit-any
 }[keyof T]
 
 type RequiredKeys<T> = Exclude<keyof T, OptionalKeys<T>>
@@ -55,7 +55,7 @@ export type SimpleDefinedType<TDescription extends Description> =
     TDescription extends { boolean: Opts }   ? boolean :
     TDescription extends { bigint : Opts }   ? bigint  :
     TDescription extends { symbol : Opts }   ? symbol  :
-    TDescription extends { class: infer T }  ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) :
+    TDescription extends { class: infer T }  ? ( T extends Constructor<any> ? InstanceType<T> : unknown ) : // eslint-disable-line @typescript-eslint/no-explicit-any
     TDescription extends { literal: (infer T1 extends string | number | boolean | null) } ? T1 :
     never
 
@@ -78,56 +78,56 @@ export type GuaranteedType<T extends Description> = DefinedType<T>
 // ─── runtime ──────────────────────────────────────────────────────────────────
 
 export function valueGuarantor(type:Values){
-    return function guarantor(_opts:Opts, value:any, path:string, errors:string[]){
-        if ( (typeof value != type) ) errors.push(`${path} is not "${type}"`);
+    return function guarantor(_opts:Opts, value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
+        if ( (typeof value !== type) ) errors.push(`${path} is not "${type}"`);
     }
 }
 
-export var errorTypeFinder = {
+export const errorTypeFinder = {
     string :valueGuarantor('string'),
     number :valueGuarantor('number'),
     boolean:valueGuarantor('boolean'),
     bigint :valueGuarantor('bigint'),
     symbol :valueGuarantor('symbol'),
-    recordString: function(innerDescription:Description, value:any, path:string, errors:string[]){
+    recordString: function(innerDescription:Description, value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
         if(!(value instanceof Array) && (value instanceof Object) && value){
             for (var a in value) {
                 findErrorsInTypes(innerDescription, value[a], path+`[${a}]`, errors);
             }
         }else errors.push(`${path} is not a Record<string,T> and must be`);
     },
-    object: function(innerDescription:{[K:string] : Description}, value:any, path:string, errors:string[]){
+    object: function(innerDescription:{[K:string] : Description}, value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
         for ( var a in innerDescription ){
             findErrorsInTypes(innerDescription[a], value[a], path+'.'+a, errors);
         }
     },
-    array: function(innerDescription:Description, value:any, path:string, errors:string[]){
+    array: function(innerDescription:Description, value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
         if(value instanceof Array){
             for ( var i = 0; i < value.length; i++ ){
                 findErrorsInTypes(innerDescription, value[i], path+`[${i}]`, errors);
             }
         }else errors.push(`${path} is not an array and must be`);
     },
-    union: function(descriptions:Description[], value:any, path:string, errors:string[]){
+    union: function(descriptions:Description[], value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
         var incompatibilities:string[] = [];
         var step = 0;
         for(var n in descriptions){
             findErrorsInTypes(descriptions[n], value, `${path}(in union)`, incompatibilities);
-            if(step++ == incompatibilities.length) return;
+            if(step++ === incompatibilities.length) return;
         }
         for(var i=0; i<incompatibilities.length; i++) errors.push(incompatibilities[i]);
     },
-    class: function guarantor(classConstructor:Function, value:any, path:string, errors:string[]){
+    class: function guarantor(classConstructor:Function, value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
         if ( !(value instanceof classConstructor) ) errors.push(`${path} is not "${
             classConstructor.name??'class'
         }"`);
     },
-    literal: function guarantor(description: Literal, value:any, path:string, errors:string[]){
+    literal: function guarantor(description: Literal, value:any, path:string, errors:string[]){ // eslint-disable-line @typescript-eslint/no-explicit-any
         if (value != description) errors.push(`${path} is not "${description}"`);
     }
-} satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>>
+} satisfies Partial<Record<Keys, (classConstructor:any, value:any, path:string, errors:string[]) => void>> // eslint-disable-line @typescript-eslint/no-explicit-any
 
-function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{
+function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, value:any, path:string, errors:string[]):void{ // eslint-disable-line @typescript-eslint/no-explicit-any
     if ( "nullable" in description ){
         if ( value === null ) return value
         else
@@ -139,7 +139,7 @@ function findErrorsInTypes<CurrentD extends Description>(description:CurrentD, v
     }else{
         if ( value == null ) errors.push(`${path} is ${value} but type is not nullable`)
         else
-        for(var firstTag in description){
+        for(var firstTag in description){ // eslint-disable-line no-unreachable-loop -- the description has only one tag: the loop takes it
             if(firstTag in errorTypeFinder){
                 var theTag = firstTag as unknown as keyof typeof errorTypeFinder;
                 // @ts-expect-error description[firstTag] may or may not be the expected type
@@ -169,14 +169,14 @@ export function guaranteeOnError(fun:(errors:string[]) => void){
     guaranteeOnErrorListener = fun;
 }
 
-export function guarantee<CurrentD extends Description>(description:CurrentD, value:NoInfer<any>):DefinedType<CurrentD>{
+export function guarantee<CurrentD extends Description>(description:CurrentD, value:NoInfer<any>):DefinedType<CurrentD>{ // eslint-disable-line @typescript-eslint/no-explicit-any
     var errors:string[] = []
     findErrorsInTypes(description, value, 'Value', errors);
     guaranteeOnErrorListener(errors);
     return value;
 }
 
-export var nullOpts:Opts = {}
+export const nullOpts:Opts = {}
 
 // envuelve la hoja con la pila de modificadores acumulados, en el mismo orden
 // que el `wrap` del runtime: el primer modificador queda más afuera.
@@ -214,7 +214,7 @@ type IS = Chain<[]> & {
     literal : <T extends Literal>(description:T) => ( {literal: T} ),
 }
 
-export var is:IS = {
+export const is:IS = {
     string   : {string  : {}},
     number   : {number  : {}},
     boolean  : {boolean : {}},
@@ -240,7 +240,7 @@ const IS_PROXIED = Symbol('IS_PROXIED')
 function isModificator(name:(keyof IS)[]): IS {
     var proxy = new Proxy(is, {
         get(_target, prop:keyof IS | typeof IS_PROXIED, _receiver) {
-            if(prop==IS_PROXIED){
+            if(prop===IS_PROXIED){
                 return true;
             }else{
                 var value = is[prop];
@@ -248,14 +248,14 @@ function isModificator(name:(keyof IS)[]): IS {
                 if(value[IS_PROXIED]){
                     return isModificator([...name, prop]);
                 }else{
-                    var wrap = (value:any) => {
+                    var wrap = (value:any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
                         for(var i=name.length-1; i>=0; i--){
                             value = {[name[i]]: value} as Description;
                         }
                         return value;
                     }
-                    if (typeof value == 'function') {
-                        return (...args:any[]) => wrap((value as Function)(...args))
+                    if (typeof value === 'function') {
+                        return (...args:any[]) => wrap((value as Function)(...args)) // eslint-disable-line @typescript-eslint/no-explicit-any
                     } else {
                         return wrap(value)
                     }

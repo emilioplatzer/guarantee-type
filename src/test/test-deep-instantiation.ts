@@ -71,7 +71,7 @@ describe("deep instantiation (no infinite types)", function(){
         var idper: string = result.idper;
         // @ts-expect-error idper es string, no number (probaría que no es `any`)
         var notNumber: number = result.idper;
-        assert.ok(idper === idper && notNumber === notNumber);
+        assert.ok(idper === idper && notNumber === notNumber); // eslint-disable-line no-self-compare -- uses the variables to check their types
     })
     it("the same via the `is` sugar syntax", function(){
         const registrar = {
@@ -95,6 +95,6 @@ describe("deep instantiation (no infinite types)", function(){
         var idper: string = result.idper;
         // @ts-expect-error idper es string, no number
         var notNumber: number = result.idper;
-        assert.ok(idper === idper && notNumber === notNumber);
+        assert.ok(idper === idper && notNumber === notNumber); // eslint-disable-line no-self-compare -- uses the variables to check their types
     })
 })

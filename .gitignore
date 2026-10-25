@@ -108,3 +108,5 @@ local-*
 *-local.*
 
 /lib
+
+.claude/
